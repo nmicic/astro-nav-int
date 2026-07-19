@@ -1,0 +1,31 @@
+# Cross-platform / cross-compiler gate. The project's core claim is
+# bit-exact integer determinism, so the same `make check` (which includes
+# the golden-hash determinism gate) must pass on x86-64 gcc, x86-64 clang,
+# and arm64 clang. A hash mismatch on any leg is a hard failure.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            cc: gcc
+          - os: ubuntu-latest
+            cc: clang
+          - os: macos-latest   # arm64
+            cc: clang
+    runs-on: ${{ matrix.os }}
+    steps:
+      # Pinned by full commit SHA (tag: v4.3.1) so the action cannot
+      # change underneath the workflow; bump deliberately.
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: make check (${{ matrix.cc }})
+        run: make check CC=${{ matrix.cc }}
+      - name: benchmark (informational)
+        run: make benchmark

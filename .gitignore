@@ -1,0 +1,29 @@
+# build artifacts - regenerate with make test / make ubsan
+*~
+.DS_Store
+*.o
+*.dSYM/
+sight_reduction
+sight_reduction_ubsan
+sight_reduction_ubsan_portable
+sight_reduction_native
+sight_reduction_portable
+libastro_nav.a
+consumer_smoke
+embedded/build/
+
+# working notes, drafts, direction evaluations - local only
+reviews/
+.c[l]aude/
+
+# skyfield download cache for tools/make_ephemeris_reference.py
+# (hip_main.dat + de421.bsp, ~70 MB; only the generated
+# ephemeris_reference.h is committed)
+tools/skyfield-cache/
+
+# python venv the tools/ docstrings instruct creating at repo root
+venv/
+
+# python bytecode cache from the offline generators
+tools/__pycache__/
+__pycache__/
