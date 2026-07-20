@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Navigation Chain — A Guided Integer Tour</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 20px; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(145deg, #050508 0%, #0a0a14 40%, #10101a 70%, #080810 100%);
+    color: #e0e0e0;
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    padding: 24px 16px 48px;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  .crumbs { font-size: 0.6rem; letter-spacing: 0; margin-bottom: 18px; }
+  .crumbs a { color: #8a92a6; text-decoration: none; }
+  .crumbs a:hover { color: #4ecdc4; }
+  .header { text-align: center; margin-bottom: 20px; }
+  .header h1 {
+    font-size: 1.35rem; font-weight: 300; letter-spacing: 0;
+    background: linear-gradient(90deg, #4ecdc4, #ffe66d, #a855f7);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .header p { font-size: 0.66rem; letter-spacing: 0; color: #8a92a6; margin-top: 8px; line-height: 1.6; }
+  .scene {
+    background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
+    padding: 14px 18px; margin-bottom: 20px; font-size: 0.73rem; color: #aab; line-height: 1.7;
+  }
+  .scene b { color: #eee; }
+  .pipeline { margin: 0 0 30px; overflow-x: auto; }
+  .pipeline svg { display: block; margin: 0 auto; min-width: 680px; }
+  .pl-box { fill: rgba(0,0,0,0.5); stroke-width: 1.5; rx: 6; }
+  .pl-t { font-size: 10px; letter-spacing: 0; text-anchor: middle; }
+  .pl-s { font-size: 8px; fill: #7b849b; text-anchor: middle; }
+  .step { margin-bottom: 28px; }
+  .step-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+  .step-head .n {
+    font-size: 0.6rem; letter-spacing: 0; padding: 3px 9px; border-radius: 3px;
+    background: rgba(78,205,196,0.1); color: #4ecdc4; border: 1px solid rgba(78,205,196,0.35);
+  }
+  .step-head h2 { font-size: 0.92rem; font-weight: 600; color: #eee; }
+  .step-head .verb { font-size: 0.62rem; color: #8a92a6; }
+  .panel {
+    background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .panel p { font-size: 0.71rem; line-height: 1.7; color: #99a; margin: 10px 0 0; }
+  .panel b { color: #ddd; font-weight: 600; }
+  .chiprow { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .chip { font-size: 0.56rem; letter-spacing: 0; padding: 3px 9px; border-radius: 3px; }
+  .chip.h { background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.4); color: #c9a8e8; }
+  .chip.m { background: rgba(78,205,196,0.08); border: 1px solid rgba(78,205,196,0.35); color: #8fd6cf; }
+  pre.transcript {
+    background: #04040a; border: 1px solid rgba(78,205,196,0.2); border-radius: 6px;
+    padding: 12px 14px; font-size: 0.66rem; line-height: 1.65; overflow-x: auto; color: #9fb;
+  }
+  pre.transcript .cmd { color: #4ecdc4; font-weight: 600; }
+  pre.transcript .dim { color: #7a8a9c; }
+  pre.transcript .hl { color: #ffe66d; }
+  pre.transcript .neg { color: #ff8f8f; }
+  pre.transcript .pos { color: #8fd6cf; }
+  .note { font-size: 0.6rem; color: #7b849b; line-height: 1.6; margin-top: 8px; }
+  .fixfig { margin: 12px 0 4px; overflow-x: auto; }
+  .fixfig svg { display: block; margin: 0 auto; min-width: 520px; }
+  .closing {
+    background: rgba(78,205,196,0.05); border: 1px solid rgba(78,205,196,0.25); border-radius: 8px;
+    padding: 18px 20px; font-size: 0.75rem; line-height: 1.75; color: #a8cfc9; margin-top: 4px;
+  }
+  .closing b { color: #eee; }
+  .closing .ints { font-size: 0.68rem; color: #8fd6cf; word-break: break-all; line-height: 1.9; }
+  .footer { margin-top: 28px; font-size: 0.58rem; color: #7b849b; line-height: 1.7; }
+  .footer a { color: #4ecdc4; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="crumbs"><a href="index.html">&larr; INDEX</a></div>
+  <div class="header">
+    <h1>THE NAVIGATION CHAIN: A GUIDED TOUR</h1>
+    <p>clock &rarr; almanac &rarr; sextant &rarr; reduction &rarr; fix &mdash; a guided tour, one verb at a time, every step a verbatim run of the shipped binary,<br>
+       with the human's units on one side and the machine's integers on the other</p>
+  </div>
+
+  <div class="scene">
+    <b>The setting:</b> an evening near <b>40&deg;N 74&deg;W</b>, 30 June 2026 (00:00 UT1 on 1 July is
+    about 8 pm local); a micrometer sextant, a radio time signal, and a small FPU-less computer running
+    this library. To be plain about what follows: the eight steps are a <b>tour of the chain, one CLI
+    verb each</b>, using the repository's pinned demonstration inputs &mdash; each reproduces
+    byte-for-byte for anyone who builds the repo, but they are separate demonstrations, not one
+    continuous observation log (step 5, for instance, reduces page 1's teaching sight, not step 4's
+    altitude). The <b>coda</b> then runs one coherent synthetic sight that closes on itself end to end.
+  </div>
+
+  <div class="pipeline">
+    <svg viewBox="0 0 720 108" width="100%" height="108" role="img" aria-label="Pipeline: clock, almanac, sextant, reduce, fix; predict loops back">
+      <g>
+        <rect class="pl-box" x="10"  y="18" width="118" height="38" stroke="#ffe66d"/>
+        <text class="pl-t" x="69"  y="35" fill="#ffe66d">CLOCK</text><text class="pl-s" x="69"  y="48">UT1 ms &middot; int64</text>
+        <rect class="pl-box" x="156" y="18" width="118" height="38" stroke="#a855f7"/>
+        <text class="pl-t" x="215" y="35" fill="#a855f7">ALMANAC</text><text class="pl-s" x="215" y="48">Q2.30 vectors</text>
+        <rect class="pl-box" x="302" y="18" width="118" height="38" stroke="#ff6b6b"/>
+        <text class="pl-t" x="361" y="35" fill="#ff6b6b">SEXTANT</text><text class="pl-s" x="361" y="48">milli-arcmin</text>
+        <rect class="pl-box" x="448" y="18" width="118" height="38" stroke="#4ecdc4"/>
+        <text class="pl-t" x="507" y="35" fill="#4ecdc4">REDUCE</text><text class="pl-s" x="507" y="48">dot products</text>
+        <rect class="pl-box" x="594" y="18" width="118" height="38" stroke="#eee"/>
+        <text class="pl-t" x="653" y="35" fill="#eee">FIX</text><text class="pl-s" x="653" y="48">centidegrees</text>
+        <g stroke="#445" stroke-width="1.2" fill="none">
+          <path d="M128 37 h24"/><path d="M274 37 h24"/><path d="M420 37 h24"/><path d="M566 37 h24"/>
+        </g>
+        <g fill="#445"><path d="M152 33 l8 4 -8 4 z"/><path d="M298 33 l8 4 -8 4 z"/><path d="M444 33 l8 4 -8 4 z"/><path d="M590 33 l8 4 -8 4 z"/></g>
+        <path d="M653 56 v18 H361 v-14" stroke="#7b849b" stroke-width="1" stroke-dasharray="4 3" fill="none"/>
+        <path d="M357 64 l4 -8 4 8 z" fill="#7b849b"/>
+        <text class="pl-s" x="507" y="86" fill="#8a92a6">--predict: the known-position check</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step">
+    <div class="step-head"><span class="n">STEP 1</span><h2>Set the clock</h2><span class="verb">--time</span></div>
+    <div class="panel">
+      <div class="chiprow">
+        <span class="chip h">HUMAN IN &middot; calendar date, UTC signal, DUT1 broadcast</span>
+        <span class="chip m">MACHINE OUT &middot; one int64: milliseconds since J2000 on the UT1 scale</span>
+      </div>
+      <pre class="transcript"><span class="cmd">$ ./sight_reduction --time 2026 7 1 0 0 0 0 15 37</span>
+2026-07-01 00:00:00.000 UTC   (DUT1 +15 ms, TAI - UTC +37 s)
+UT1_MS:          <span class="hl">836136000015</span>
+TT_MINUS_UT1_MS: 69169</pre>
+      <p>Celestial time cares about seconds: <b>one second of clock error shifts Earth rotation angle by
+      about a quarter arcminute</b>. The radio pips and the broadcast DUT1 correction are already integer statements
+      (milliseconds), so the machine keeps them as one integer &mdash; no fractional Julian dates, no
+      &ldquo;days since epoch&rdquo; doubles whose resolution quietly degrades with the century.</p>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step">
+    <div class="step-head"><span class="n">STEP 2</span><h2>Open the almanac</h2><span class="verb">--star</span></div>
+    <div class="panel">
+      <div class="chiprow">
+        <span class="chip h">HUMAN OUT &middot; GHA / declination in degrees, like the printed daily page</span>
+        <span class="chip m">MACHINE OUT &middot; the same fact as a Q2.30 earth-fixed unit vector</span>
+      </div>
+      <pre class="transcript"><span class="cmd">$ ./sight_reduction --star 3 836136000000</span>
+Vega at UT1 J2000 +836136000000 ms:
+GHA Aries: 279.06 deg
+GHA:       359.61 deg
+dec:       38.81 deg
+earth-fixed vector: <span class="hl">(836698133, 5757400, 672922426)/2^30</span></pre>
+      <p>Two renderings of one answer. The degree lines are the human's almanac page. The vector line
+      <b>is the machine's almanac page</b>: Vega's direction in the rotating earth frame as three
+      integers. A printed almanac is a table of angles because humans steer by angles; a machine
+      almanac can be a table of vectors, leaving the sight reduction as arithmetic that a small integer
+      processor can perform &mdash; see step 5.</p>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step">
+    <div class="step-head"><span class="n">STEP 3</span><h2>Know where to look</h2><span class="verb">--reduce-star</span></div>
+    <div class="panel">
+      <div class="chiprow">
+        <span class="chip h">HUMAN IN &middot; DR position 40.00N 74.00W (centidegrees: 4000 &minus;7400)</span>
+        <span class="chip m">MACHINE OUT &middot; sin Hc in Q2.30 &rarr; printed as degrees for the eye</span>
+      </div>
+      <pre class="transcript"><span class="cmd">$ ./sight_reduction --reduce-star 4000 -7400 3 836136000000</span>
+Vega       at UT1 J2000 +836136000000 ms
+Hc(C): <span class="hl">34.29 deg</span>   <span class="dim">(machine sin_hc=604975825/2^30)</span>
+Zn(C): <span class="hl">65.30 deg true</span>   square-key=12615/65536</pre>
+      <p>Twilight is short; the navigator pre-computes where each star will hang. Vega: bearing 065&deg;,
+      a third of the way up the sky. The machine's actual product is the integer
+      <b>sin_hc = 604975825/2<sup>30</sup></b> &mdash; one dot product between the observer's zenith
+      vector and Vega's vector from step 2; degrees are printed only at the boundary where a human
+      reads them.</p>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step">
+    <div class="step-head"><span class="n">STEP 4</span><h2>Correct the reading</h2><span class="verb">--correct</span></div>
+    <div class="panel">
+      <div class="chiprow">
+        <span class="chip h">HUMAN IN &middot; drum reading 25&deg;14.3&prime;, eye height, index error</span>
+        <span class="chip m">MACHINE &middot; every correction a signed integer in milli-arcminutes</span>
+      </div>
+      <pre class="transcript"><span class="cmd">$ ./sight_reduction --correct 1514300 100 200 150 16100 1</span>
+Hs:  25 deg 14.3'   (index <span class="pos">+100</span>, dip <span class="neg">-2489</span>, refraction <span class="neg">-2102</span>, parallax <span class="pos">+136</span>, SD +lower milli-arcmin)
+Ho:  25 deg 26.0'   = <span class="hl">1526045 milli-arcmin</span>   sin(Ho) = 461142501/2^30</pre>
+      <p>The classic correction ladder &mdash; index error, dip of the horizon, refraction, parallax,
+      semidiameter (this documented example is a lower-limb Sun-type sight; star sights skip SD and
+      parallax) &mdash; the same categories of corrections a navigator took from the almanac's pages,
+      implemented here as <b>signed integers on the 0.001&prime; lattice</b>. The drum said 1514300;
+      the corrected altitude is 1526045. Once each model term is rounded to that scale, summation is exact integer addition; the models they
+      come from (refraction, dip, parallax) carry their own declared budgets, and the quantization
+      (page 2) is declared, not hidden.</p>
+    </div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="step">
+    <div class="step-head"><span class="n">STEP 5</span><h2>Reduce the sight</h2><span class="verb">--reduce</span></div>
+    <div class="panel">
+      <div class="chiprow">
+        <span class="chip h">HUMAN OUT &middot; intercept + azimuth: &ldquo;12 miles toward 145&rdquo;</span>
+        <span class="chip m">MACHINE &middot; three integer routes, cross-checked in one run</span>
+      </div>
+      <pre class="transcript"><span class="cmd">$ ./sight_reduction --reduce 4000 -7400 6000 2000 4012800</span>
+Hc(A): 66.68 deg
+Hc(B): 66.68 deg
+Hc(C): 66.68 deg   <span class="dim">(machine sin_hc=986027972/2^30)</span>
+Zn(A): 144.95 deg true
+Zn(B): 144.96 deg true   square-key=27022/65536
+Zn(C): 144.96 deg true   square-key=27022/65536
+A/B altitude difference: 0.000'
+Intercept: <span class="hl">12.0 nm TOWARD</span></pre>
+      <p>The same sight worked three ways in one run &mdash; A: spherical trig via CORDIC in Q16.48;
+      B: the same altitude terms with the azimuth carried as an <b>integer square-key ray</b>
+      (65536 keys per turn) instead of an atan2 angle; C: pure vector dot products &mdash;
+      cross-checked against each other and (page 1) against a five-place log-table working of the
+      identical triangle. The human deliverable is the familiar Marcq St.-Hilaire intercept:
+      <b>a line of position, 12.0 nm toward 145&deg;</b>.</p>
+    </div>
+  </div>
+
+  <!-- STEP 6 -->
+  <div class="step">
+    <div class="step-head"><span class="n">STEP 6</span><h2>Cross two circles</h2><span class="verb">--fix</span></div>
+    <div class="panel">
+      <div class="chiprow">
+        <span class="chip h">HUMAN OUT &middot; a position, plus the honest second answer</span>
+        <span class="chip m">MACHINE &middot; two cones intersected in integer vector arithmetic</span>
+      </div>
+      <pre class="transcript"><span class="cmd">$ ./sight_reduction --fix 4400 100 0 0 2700000 6000 3000 2476800</span>
+fix:       lat <span class="hl">45.00 deg</span>   lon <span class="hl">0.00 deg</span>
+alternate: lat -15.78 deg   lon -42.71 deg   <span class="dim">(other circle intersection)</span></pre>
+      <div class="fixfig">
+        <svg viewBox="0 0 560 300" width="100%" role="img" aria-label="Two circles of equal altitude crossing at the fix and at the alternate point">
+          <circle cx="180" cy="150" r="150" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.75"/>
+          <circle cx="380" cy="150" r="150" fill="none" stroke="#ffe66d" stroke-width="1.2" opacity="0.75"/>
+          <circle cx="180" cy="150" r="2.5" fill="#a855f7"/>
+          <circle cx="380" cy="150" r="2.5" fill="#ffe66d"/>
+          <text x="180" y="138" text-anchor="middle" font-size="9" fill="#a855f7">GP&#9733;1</text>
+          <text x="380" y="138" text-anchor="middle" font-size="9" fill="#ffe66d">GP&#9733;2</text>
+          <line x1="180" y1="150" x2="280" y2="38" stroke="#7b849b" stroke-width="0.8" stroke-dasharray="3 3"/>
+          <text x="205" y="86" font-size="8.5" fill="#8a92a6" transform="rotate(-48 205 86)">radius = 90&deg; &minus; Ho</text>
+          <circle cx="280" cy="38" r="5" fill="#4ecdc4"/>
+          <text x="280" y="22" text-anchor="middle" font-size="10" fill="#4ecdc4">FIX 45.00N 0.00E</text>
+          <circle cx="280" cy="262" r="4" fill="none" stroke="#ff6b6b" stroke-width="1.2"/>
+          <text x="280" y="284" text-anchor="middle" font-size="9" fill="#ff6b6b">alternate &minus;15.78 &minus;42.71 (rejected: far from DR)</text>
+        </svg>
+      </div>
+      <p>Each corrected altitude puts the observer on a <b>circle of equal altitude</b> around the
+      body's ground point. Two circles cross twice; the machine reports both and the navigator keeps
+      the one near the dead-reckoning track &mdash; the same judgment call the paper plot always
+      demanded, now with both candidates stated to the centidegree. (~70 ns for the whole two-body
+      fix, integer arithmetic throughout.)</p>
+    </div>
+  </div>
+
+  <!-- STEP 7 -->
+  <div class="step">
+    <div class="step-head"><span class="n">STEP 7</span><h2>A different observation: timed crossings</h2><span class="verb">--fix-stars</span></div>
+    <div class="panel">
+      <div class="chiprow">
+        <span class="chip h">HUMAN IN &middot; DR hint, two star identities, one preset angle, and two crossing times</span>
+        <span class="chip m">MACHINE OUT &middot; both circle intersections, with the DR selecting the nearby one</span>
+      </div>
+      <pre class="transcript"><span class="cmd">$ ./sight_reduction --fix-stars 4400 -100 15 836121913051 1800000 9 836127121859 1800000</span>
+Deneb      at UT1 J2000 +<span class="hl">836121913051</span> ms   Ho = 1800000 milli-arcmin
+Altair     at UT1 J2000 +<span class="hl">836127121859</span> ms   Ho = 1800000 milli-arcmin
+fix:       lat 45.00 deg   lon 0.00 deg
+alternate: lat -11.07 deg   lon 112.92 deg   <span class="dim">(other circle intersection)</span></pre>
+      <p>In the Bris-sextant tradition: fix a single known angle (here exactly 30&deg;, i.e. Ho =
+      1800000 milli-arcminutes) and instead of measuring altitudes, <b>note the clock time when each
+      star crosses it</b>. Deneb crossed at one integer millisecond count, Altair 87 minutes later at
+      another. Together with the two body identities, calibrated angle, and DR hint, those timestamps
+      determine the two candidate intersections shown by the program. Angle reading has become
+      timekeeping, which is where integer representation is most obviously the native language.
+      (The trick replaces only the angle <i>reading</i>: judging the moment of crossing and the
+      correction chain are still real observational work, and the timestamps here are synthetic
+      crossing instants.)</p>
+    </div>
+  </div>
+
+  <!-- STEP 8 -->
+  <div class="step">
+    <div class="step-head"><span class="n">STEP 8</span><h2>A later known-position check</h2><span class="verb">--predict</span></div>
+    <div class="panel">
+      <div class="chiprow">
+        <span class="chip h">HUMAN OUT &middot; &ldquo;set 70&deg;01.3&prime;, face 146, the Sun's edge should kiss the horizon&rdquo;</span>
+        <span class="chip m">MACHINE &middot; forward chain run in reverse &mdash; the known-position check</span>
+      </div>
+      <pre class="transcript"><span class="cmd">$ ./sight_reduction --predict 4000 -7400 sun:69200 836367200000 200 1</span>
+Sun at UT1 J2000 +836367200000 ms (TT - UT1 = 69200 ms):  distance 1016703 micro-AU   SD 15.733'   HP 0.144'
+observer: lat 40.00 deg   lon -74.00 deg   eye 200 cm
+Hc:  70 deg 14.2'   = 4214247 milli-arcmin   (machine sin_hc=1010500573/2^30)
+Zn:  146.33 deg true   (face here)
+predicted Hs (IE = 0, lower limb):  <span class="hl">70 deg 1.3'</span>   = 4201316 milli-arcmin</pre>
+      <p>Two days on, late morning, known position: the machine predicts the <b>raw sextant reading</b>
+      &mdash; corrections run backwards, semidiameter and parallax from the Sun's actual distance
+      (1016703 micro-AU: even astronomical units are integers here). The navigator measures, and the
+      difference between predicted and observed is the classic known-position check: averaged over
+      repeated sights it <b>estimates the index correction</b>, though any single residual also
+      carries horizon, refraction-anomaly, eye-height and timing error. What the integer chain
+      contributes is the bookkeeping half: run in reverse it reproduces its own forward arithmetic
+      to the milli-arcminute, so none of the residual is the software arguing with its own rounding.
+      The sextant calibrates the machine's user; the machine helps calibrate the sextant.</p>
+    </div>
+  </div>
+
+  <!-- CODA -->
+  <div class="step">
+    <div class="step-head"><span class="n">CODA</span><h2>The loop, closed on paper</h2><span class="verb">--predict &middot; --correct-sun &middot; --reduce-sun</span></div>
+    <div class="panel">
+      <p style="margin-top:0">One last demonstration, built so anyone can check every stage: a
+      <b>synthetic Sun sight from a known position</b> (40&deg;N 40&deg;W, no vessel required). First,
+      ask the machine what a perfect instrument would read there:</p>
+      <pre class="transcript"><span class="cmd">$ ./sight_reduction --predict 4000 -4000 sun:69200 837814500000 200 1</span>
+Sun at UT1 J2000 +837814500000 ms (TT - UT1 = 69200 ms):  distance 1016172 micro-AU   SD 15.741'   HP 0.144'
+observer: lat 40.00 deg   lon -40.00 deg   eye 200 cm
+Hc:  29 deg 46.6'   = 1786631 milli-arcmin   (machine sin_hc=533250572/2^30)
+Zn:  87.17 deg true   (face here)
+predicted Hs (IE = 0, lower limb):  29 deg 35.0'   = <span class="hl">1775003 milli-arcmin</span></pre>
+      <p>Now give the imaginary sextant a deliberate index error of +100 milli-arcminutes &mdash; so it
+      reads 100 low: <b>1775003 &minus; 100 = 1774903</b>. Feed that &ldquo;observation&rdquo; back
+      through the correction chain:</p>
+      <pre class="transcript"><span class="cmd">$ ./sight_reduction --correct-sun 1774903 100 200 837814500000 69200 1</span>
+Sun at UT1 J2000 +837814500000 ms:  distance 1016172 micro-AU   SD 15.741'   HP 0.144'
+Hs:  29 deg 34.9'   (index <span class="pos">+100</span>, dip <span class="neg">-2489</span>, refraction <span class="neg">-1749</span>, parallax <span class="pos">+125</span>, SD +lower milli-arcmin)
+Ho:  29 deg 46.6'   = <span class="hl">1786631 milli-arcmin</span>   sin(Ho) = 533250636/2^30</pre>
+      <p>And reduce it from an assumed position deliberately placed <b>one degree of longitude too far
+      west</b> (41&deg;W):</p>
+      <pre class="transcript"><span class="cmd">$ ./sight_reduction --reduce-sun 4000 -4100 837814500000 69200 1786631</span>
+Sun at UT1 J2000 +837814500000 ms (TT - UT1 = 69200 ms)
+Hc(C): 29.01 deg   <span class="dim">(machine sin_hc=520761757/2^30)</span>
+Zn(C): 86.55 deg true   square-key=15890/65536
+sine residual: -12488879/2^30 (machine sin_hc - sin Ho)
+Intercept: <span class="hl">46.0 nm TOWARD</span></pre>
+      <p>Azimuth 86.55&deg; &mdash; nearly due east, toward the known position &mdash; and the
+      intercept is 46.0 nm: at 40&deg;N, one degree of longitude is 60&nbsp;&middot;&nbsp;cos&nbsp;40&deg;
+      = 46.0 nautical miles. <b>The loop closes the way one sight can close it: the correction chain
+      returns the altitude it predicted, and the resulting equal-altitude circle contains the known position
+      by construction.</b> A conventional straight chart LOP is the local approximation to that circle,
+      and one sight still leaves every point on the LOP possible. Every stage is integer arithmetic and
+      reproducible from the command lines shown.</p>
+    </div>
+  </div>
+
+  <div class="closing">
+    <b>The full tour, as the machine saw it:</b><br>
+    <span class="ints">
+    836136000015 &middot; (836698133, 5757400, 672922426) &middot; 604975825 &middot; 1514300 &rarr;
+    1526045 &middot; 461142501 &middot; 986027972 &middot; 27022 &middot; 4400&hellip;2476800 &rarr;
+    4500/0 &middot; 836121913051 &amp; 836127121859 &rarr; 45.00N 0.00E &middot; 4201316
+    </span><br><br>
+    Time, star places, drum readings, corrections, sines, azimuth keys, fixes &mdash; every quantity
+    shown at the human&ndash;machine boundary is an integer on a declared scale. <b>No floating-point
+    operation was executed by these shipping-runtime commands.</b> The host golden schedule and the
+    separate embedded profiles then test the same library arithmetic across the documented compiler,
+    backend and QEMU target matrix.
+  </div>
+
+  <div class="footer">
+    All command lines and outputs above are verbatim runs of the shipped <code>sight_reduction</code>
+    binary (v0.1.0, golden hash <code>0x3d6ddb7b86f2c7d2</code>); build the repo and re-run them.
+    &nbsp;<a href="three-ages.html">&larr; Three Ages</a> &nbsp;&middot;&nbsp;
+    <a href="human-machine.html">&larr; Human vs Machine</a> &nbsp;&middot;&nbsp;
+    <a href="https://github.com/nmicic/astro-nav-int">source &amp; validation gates</a>
+  </div>
+</div>
+</body>
+</html>

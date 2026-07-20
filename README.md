@@ -666,6 +666,12 @@ The RV32I-vs-RV32IM and Armv6-M-vs-M3/M4 columns put numbers on what
 software multiply/divide costs this workload: 1.6-3.6x the instructions, depending on how
 divide-heavy the feature is.
 
+## Visual guide
+
+The [visualization pages](https://nmicic.github.io/astro-nav-int/viz/)
+explain the integer-only claim, compare traditional tables with floating
+point and integer CORDIC, and walk through the sextant-to-fix chain.
+
 ## Files
 
 - `astro_nav.h` - small public C API for integer-only sight reduction
@@ -673,6 +679,7 @@ divide-heavy the feature is.
 - `sight_reduction.c` - CLI, tests, native oracle, benchmark
 - `fp_math.h` - Q16.48 math derived from the pinned `int-llm` revision above, with native `__int128` and portable two-limb backends
 - `embedded/` - freestanding Cortex-M/RV32 builds, QEMU bit-exactness gate, and flash/RAM/stack/instruction measurements
+- `viz/` - static visual explanations and worked integer-navigation examples; start with [`viz/index.html`](viz/index.html)
 - `examples/consumer.c` - standalone consumer of `libastro_nav.a`: the only project inputs are `astro_nav.h` + the archive
 - `docs/WORKFLOW.md` - the sextant-to-position chain, step by step
 - `docs/HOWTO.md` - operating manual: build, CLI reference, worked examples, limitations

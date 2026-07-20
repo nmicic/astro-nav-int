@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Sight, Three Traditions — Log Tables, Floating Point, Integer</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 20px; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(145deg, #050508 0%, #0a0a14 40%, #10101a 70%, #080810 100%);
+    color: #e0e0e0;
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    padding: 24px 16px 48px;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  .crumbs { font-size: 0.6rem; letter-spacing: 0; margin-bottom: 18px; }
+  .crumbs a { color: #8a92a6; text-decoration: none; }
+  .crumbs a:hover { color: #4ecdc4; }
+  .header { text-align: center; margin-bottom: 8px; }
+  .header h1 {
+    font-size: 1.35rem; font-weight: 300; letter-spacing: 0;
+    background: linear-gradient(90deg, #ffe66d, #ff6b6b, #4ecdc4);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .header p { font-size: 0.66rem; letter-spacing: 0; color: #8a92a6; margin-top: 8px; line-height: 1.6; }
+  .sight-card {
+    background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
+    padding: 14px 18px; margin: 22px 0 26px; text-align: center; font-size: 0.74rem; color: #aab;
+    line-height: 1.7;
+  }
+  .sight-card b { color: #eee; }
+  section { margin-bottom: 34px; }
+  .era-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  .era-head .tag { font-size: 0.55rem; letter-spacing: 0; padding: 3px 9px; border-radius: 3px; }
+  .era-head h2 { font-size: 1.0rem; font-weight: 600; color: #eee; }
+  .era-head .sub { font-size: 0.62rem; color: #8a92a6; }
+  .e1 .tag { background: rgba(255,230,109,0.12); color: #ffe66d; border: 1px solid rgba(255,230,109,0.35); }
+  .e2 .tag { background: rgba(255,107,107,0.12); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.35); }
+  .e3 .tag { background: rgba(78,205,196,0.12); color: #4ecdc4; border: 1px solid rgba(78,205,196,0.35); }
+  .panel {
+    background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px;
+    padding: 16px 18px; margin-bottom: 12px;
+  }
+  .panel p { font-size: 0.72rem; line-height: 1.7; color: #99a; margin-bottom: 10px; }
+  .panel p:last-child { margin-bottom: 0; }
+  .panel b { color: #ddd; font-weight: 600; }
+  .worktable { overflow-x: auto; }
+  .worktable table { border-collapse: collapse; margin: 6px auto; font-size: 0.72rem; }
+  .worktable th, .worktable td { padding: 5px 14px; text-align: left; white-space: nowrap; }
+  .worktable th { font-size: 0.55rem; letter-spacing: 0; color: #7b849b; font-weight: 400; border-bottom: 1px solid #223; }
+  .worktable td { color: #bbc; border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .worktable td.num { text-align: right; font-weight: 600; }
+  .mant { color: #ffe66d; }
+  .sumline td { border-top: 1px solid #445; color: #eee; }
+  .note { font-size: 0.6rem; color: #7b849b; line-height: 1.6; margin-top: 8px; }
+  pre.transcript {
+    background: #04040a; border: 1px solid rgba(78,205,196,0.2); border-radius: 6px;
+    padding: 12px 14px; font-size: 0.68rem; line-height: 1.65; overflow-x: auto; color: #9fb;
+  }
+  pre.transcript .cmd { color: #4ecdc4; font-weight: 600; }
+  pre.transcript .dim { color: #7a8a9c; }
+  pre.transcript .hl { color: #ffe66d; }
+  .cordic { overflow-x: auto; }
+  .cordic table { border-collapse: collapse; font-size: 0.62rem; margin: 4px auto; }
+  .cordic th, .cordic td { padding: 3px 10px; text-align: right; white-space: nowrap; }
+  .cordic th { font-size: 0.52rem; letter-spacing: 0; color: #7b849b; font-weight: 400; border-bottom: 1px solid #223; }
+  .cordic td { color: #9ab; border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .cordic td.sig { color: #4ecdc4; }
+  .compare { overflow-x: auto; margin-top: 8px; }
+  .compare table { border-collapse: collapse; font-size: 0.66rem; width: 100%; min-width: 640px; }
+  .compare th, .compare td { padding: 8px 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .compare th { font-size: 0.55rem; letter-spacing: 0; color: #7b849b; font-weight: 400; }
+  .compare td { color: #aab; line-height: 1.5; }
+  .compare td:first-child { color: #ddd; white-space: nowrap; }
+  .lanes { overflow-x: auto; margin: 22px 0 26px; }
+  .lanes table { border-collapse: collapse; font-size: 0.63rem; width: 100%; min-width: 720px; }
+  .lanes th, .lanes td { padding: 8px 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: top; }
+  .lanes th { font-size: 0.56rem; letter-spacing: 0; font-weight: 600; border-bottom: 1px solid #223; }
+  .lanes th:nth-child(2) { color: #ffe66d; } .lanes th:nth-child(3) { color: #ff6b6b; } .lanes th:nth-child(4) { color: #4ecdc4; }
+  .lanes td { color: #99a; line-height: 1.55; }
+  .lanes td:first-child { font-size: 0.54rem; letter-spacing: 0; color: #7b849b; white-space: nowrap; padding-top: 10px; }
+  .lanes td code { color: #bbc; background: rgba(255,255,255,0.04); padding: 0 4px; border-radius: 3px; }
+  .cordic-widget { display: grid; grid-template-columns: minmax(250px, 0.9fr) 1.1fr; gap: 18px; align-items: center; margin: 16px 0 10px; }
+  @media (max-width: 760px) { .cordic-widget { grid-template-columns: 1fr; } }
+  .compass-shell {
+    display: grid; place-items: center; padding: 12px;
+    background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px;
+  }
+  #cordicCompass { width: min(100%, 320px); height: auto; }
+  #needleG { transition: transform 360ms ease; transform-box: view-box; transform-origin: 160px 160px; }
+  @media (prefers-reduced-motion: reduce) { #needleG { transition: none; } }
+  .cstate { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+  @media (max-width: 440px) { .cstate { grid-template-columns: 1fr; } }
+  .cstate div { background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; padding: 8px 11px; }
+  .cstate span { display: block; font-size: 0.5rem; letter-spacing: 0; color: #7b849b; margin-bottom: 3px; }
+  .cstate strong { font-size: 0.78rem; color: #dde; font-weight: 600; }
+  .ccaption { min-height: 44px; font-size: 0.66rem; line-height: 1.6; color: #99a; margin-bottom: 10px; }
+  .cbtns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cbtns button {
+    background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); border-radius: 4px;
+    color: #99a; font-family: inherit; font-size: 0.6rem; padding: 5px 12px; cursor: pointer;
+  }
+  .cbtns button:hover:not(:disabled) { border-color: #4ecdc4; color: #cdd; }
+  .cbtns button:disabled { opacity: 0.35; cursor: default; }
+  .closing {
+    background: rgba(78,205,196,0.05); border: 1px solid rgba(78,205,196,0.25); border-radius: 8px;
+    padding: 18px 20px; font-size: 0.76rem; line-height: 1.7; color: #a8cfc9;
+  }
+  .closing b { color: #eee; }
+  .footer { margin-top: 28px; font-size: 0.58rem; color: #7b849b; line-height: 1.7; }
+  .footer a { color: #4ecdc4; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="crumbs"><a href="index.html">&larr; INDEX</a></div>
+  <div class="header">
+    <h1>ONE SIGHT, THREE TRADITIONS</h1>
+    <p>the same sight worked three ways &mdash; the navigator's log tables,<br>
+       conventional floating-point software, and the machine-native integer core</p>
+  </div>
+
+  <div class="sight-card">
+    <b>The sight, fixed for all three workings:</b> assumed position <b>40&deg;N&nbsp;74&deg;W</b>,
+    body at <b>GHA 60&deg;</b>, declination <b>20&deg;N</b> &nbsp;&rarr;&nbsp; local hour angle
+    <b>LHA&nbsp;346&deg;</b> (meridian angle 14&deg;&nbsp;E). Question: how high should it stand
+    (<b>Hc</b>), and on what bearing (<b>Zn</b>)?
+  </div>
+
+  <div class="lanes">
+    <table>
+      <tr><th></th><th>PAPER LOG TABLES</th><th>TYPICAL FLOATING C</th><th>ASTRO-NAV-INT</th></tr>
+      <tr>
+        <td>INPUT</td>
+        <td>angles in degree&ndash;minute columns; the navigator supplies the decimal-point convention</td>
+        <td><code>double</code> degrees, e.g. <code>25.238333&hellip;</code> &mdash; nearest binary fraction, not the reading itself</td>
+        <td>scaled integers, e.g. <code>1514300</code> milli-arcminutes &mdash; an exact encoding of the written reading; no decimal parser exists</td>
+      </tr>
+      <tr>
+        <td>REPRESENTATION</td>
+        <td>5&ndash;6 digit log mantissas with an implied scale</td>
+        <td>IEEE 754: sign &middot; significand &middot; 2<sup>exp</sup> &mdash; the scale moves value to value</td>
+        <td>Q16.48, Q2.30, marcmin &mdash; the denominator is part of the design and never moves</td>
+      </tr>
+      <tr>
+        <td>NON-LINEAR MATH</td>
+        <td>lookup + interpolate in books computed before the voyage; then column addition</td>
+        <td><code>sin</code>/<code>cos</code>/<code>atan2</code>/<code>sqrt</code> from the FPU and libm at runtime</td>
+        <td>48-iteration integer CORDIC, integer sqrt and divide, 128-bit-widened products</td>
+      </tr>
+      <tr>
+        <td>OUTPUT</td>
+        <td>inverse table lookup restores the angle; ABC tables give azimuth</td>
+        <td><code>printf</code> rounds the double back to a friendly decimal</td>
+        <td>integer quotient/remainder printed with punctuation: <code>2901</code> &rarr; &ldquo;29.01&rdquo;</td>
+      </tr>
+      <tr>
+        <td>WHERE TRIG LIVES</td>
+        <td>in the printed table &mdash; evaluated years earlier, on land</td>
+        <td>in the platform's math library &mdash; whichever one is installed</td>
+        <td>in integer ladders + a 48-entry angle table the library builds once, at init, by integer series</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ERA 1 -->
+  <section class="e1">
+    <div class="era-head">
+      <span class="tag">AGE OF SAIL</span>
+      <h2>Five-digit logarithms, plain addition</h2>
+      <span class="sub">fixed-point arithmetic, executed by a human</span>
+    </div>
+    <div class="panel">
+      <p>The classic haversine reduction:
+        <b>hav&nbsp;ZD = hav(lat&nbsp;&minus;&nbsp;dec) + cos&nbsp;lat &middot; cos&nbsp;dec &middot; hav&nbsp;LHA</b>,
+        then Hc&nbsp;=&nbsp;90&deg;&nbsp;&minus;&nbsp;ZD. The multiplication is the expensive part &mdash; so the
+        navigator never multiplies. The log table turns the product into a <b>sum of five-digit
+        integers</b>: look up each logarithm, add the mantissas in columns, take the antilog. The decimal
+        point lives in the navigator's head; the paper only ever carries integers.</p>
+      <div class="worktable">
+        <table>
+          <tr><th>QUANTITY</th><th>TABLE ENTRY</th><th style="text-align:right">5-DIGIT MANTISSA</th></tr>
+          <tr><td>log hav 14&deg;</td><td>8.17179</td><td class="num mant">17179 <span class="dim">(+8)</span></td></tr>
+          <tr><td>log cos 40&deg;</td><td>9.88425</td><td class="num mant">88425 <span class="dim">(+9)</span></td></tr>
+          <tr><td>log cos 20&deg;</td><td>9.97299</td><td class="num mant">97299 <span class="dim">(+9)</span></td></tr>
+          <tr class="sumline"><td>column sum</td><td>28.02903 &minus; 30 = &minus;1.97097 = 8.02903 in bar notation</td><td class="num mant">= integer addition</td></tr>
+          <tr><td>antilog 8.02903</td><td colspan="2">&rarr; 0.010691</td></tr>
+          <tr><td>+ hav 20&deg; (natural table)</td><td colspan="2">+ 0.030154 &nbsp;&rarr;&nbsp; hav ZD = 0.040845</td></tr>
+          <tr class="sumline"><td>ZD from hav table</td><td colspan="2">23&deg;19.2&prime; &nbsp;&rarr;&nbsp; <b style="color:#ffe66d">Hc = 66&deg;40.8&prime; = 66.68&deg;</b></td></tr>
+        </table>
+      </div>
+      <p class="note">Recomputed here to five places with the same rules a navigator followed (not scanned
+      from a historical volume). Azimuth went the same way &mdash; time-azimuth tables or ABC tables:
+      more lookups, more integer addition. Table precision, typically 0.1&prime;, was a <b>declared</b>
+      quantization step: everyone knew exactly how coarse the tools were.</p>
+    </div>
+  </section>
+
+  <!-- ERA 2 -->
+  <section class="e2">
+    <div class="era-head">
+      <span class="tag">FLOATING-POINT ERA</span>
+      <h2>The same formula, handed to a math library</h2>
+      <span class="sub">IEEE 754 binary64, sin/cos/asin/atan2 from libm</span>
+    </div>
+    <div class="panel">
+      <p>A calculator or computer evaluates
+      <b>sin&nbsp;Hc = sin&nbsp;&phi;&nbsp;sin&nbsp;&delta; + cos&nbsp;&phi;&nbsp;cos&nbsp;&delta;&nbsp;cos&nbsp;LHA</b>
+      directly in double precision: <b>Hc = 66.680325&hellip;&deg;</b>, with ~16 significant digits of
+      arithmetic headroom. Precision is not the issue &mdash; a double is superb at this. Two things are
+      quietly different from the tables, though. First, the <b>scale stops being shared</b>: whole
+      degrees like 40&deg;, 20&deg;, 346&deg; happen to be exactly representable, but rounding begins
+      the moment they are converted to radians, and a typical fractional reading like
+      25&deg;14.3&prime; is already the nearest binary fraction, not the value itself (page 2 makes
+      this concrete). Second, the <b>last bits are not fixed by the C/libm contract</b>:
+      libm is a library choice, and two correct math libraries may legitimately round a sine differently,
+      so identical inputs can differ in the final bit across platforms. Invisible for navigation
+      accuracy &mdash; but identical results are not guaranteed unless an application deliberately
+      engineers and pins them.</p>
+    </div>
+  </section>
+
+  <!-- ERA 3 -->
+  <section class="e3">
+    <div class="era-head">
+      <span class="tag">MACHINE FIXED POINT</span>
+      <h2>The navigator's arithmetic, run by the machine</h2>
+      <span class="sub">astro-nav-int: int64 Q16.48, CORDIC shift/add, no FPU, no libm</span>
+    </div>
+    <div class="panel">
+      <p>The shipped binary, same sight (angles as integer centidegrees, 100&nbsp;=&nbsp;1&deg;; the
+      trailing argument is a corrected altitude Ho in integer milli-arcminutes, from which the intercept
+      follows):</p>
+      <pre class="transcript"><span class="cmd">$ ./sight_reduction --reduce 4000 -7400 6000 2000 4012800</span>
+Hc(A): <span class="hl">66.68 deg</span>
+Hc(B): <span class="hl">66.68 deg</span>
+Hc(C): <span class="hl">66.68 deg</span>   <span class="dim">(machine sin_hc=986027972/2^30)</span>
+Zn(A): 144.95 deg true
+Zn(B): 144.96 deg true   <span class="dim">square-key=27022/65536</span>
+Zn(C): 144.96 deg true   <span class="dim">square-key=27022/65536</span>
+A/B altitude difference: 0.000'
+Intercept: 12.0 nm TOWARD</pre>
+      <p>Same Hc as the log tables, to their own precision &mdash; and the machine's trick is the same
+      <b>kind</b> of trick. The log table replaced the human's multiplication with table lookup and
+      integer addition. <b>CORDIC</b> replaces the machine's trigonometry with table lookup and integer
+      shift-and-add: rotate a vector through a fixed ladder of angles arctan(2<sup>&minus;i</sup>), and
+      each step uses one angle-table entry, two shifts, and additions or subtractions &mdash; basic
+      operations available even on small integer CPUs. Watch the ladder home in on this very sight's azimuth:</p>
+
+      <div class="cordic-widget">
+        <div class="compass-shell">
+          <svg id="cordicCompass" viewBox="0 0 320 320" role="img" aria-label="A compass needle reaches azimuth 144.95 true through successively smaller signed turns">
+            <circle cx="160" cy="160" r="132" fill="rgba(0,0,0,0.35)" stroke="#2a2a38" stroke-width="2"/>
+            <circle cx="160" cy="160" r="112" fill="rgba(255,255,255,0.02)" stroke="#1c1c28" stroke-width="1"/>
+            <line x1="160" y1="48" x2="160" y2="272" stroke="#222230" stroke-width="1"/>
+            <line x1="48" y1="160" x2="272" y2="160" stroke="#222230" stroke-width="1"/>
+            <text x="160" y="39" text-anchor="middle" font-size="13" fill="#8a92a6" font-weight="700">N</text>
+            <text x="284" y="165" text-anchor="middle" font-size="13" fill="#8a92a6" font-weight="700">E</text>
+            <text x="160" y="293" text-anchor="middle" font-size="13" fill="#8a92a6" font-weight="700">S</text>
+            <text x="36" y="165" text-anchor="middle" font-size="13" fill="#8a92a6" font-weight="700">W</text>
+            <g transform="rotate(144.952 160 160)">
+              <line x1="160" y1="160" x2="160" y2="48" stroke="#ffe66d" stroke-width="2" stroke-dasharray="5 5" opacity="0.8"/>
+            </g>
+            <g id="needleG" transform="rotate(0 160 160)">
+              <line x1="160" y1="160" x2="160" y2="67" stroke="#4ecdc4" stroke-width="5" stroke-linecap="round"/>
+              <line x1="160" y1="160" x2="160" y2="207" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/>
+            </g>
+            <circle cx="160" cy="160" r="6" fill="#dde"/>
+          </svg>
+        </div>
+        <div>
+          <div class="cstate" aria-live="polite">
+            <div><span>STEP</span><strong id="cStep">Start</strong></div>
+            <div><span>SIGNED TURN</span><strong id="cTurn">none</strong></div>
+            <div><span>BEARING SO FAR</span><strong id="cBear">0.000 deg</strong></div>
+            <div><span>OFF TARGET</span><strong id="cErr">144.952 deg</strong></div>
+          </div>
+          <p class="ccaption" id="cCap">Needle at north. The dashed line is the azimuth this sight demands,
+          144.95&deg; true. Every turn that follows uses one angle-table entry, two shifts, and additions or subtractions.</p>
+          <div class="cbtns">
+            <button type="button" id="cPrev">&larr; Prev</button>
+            <button type="button" id="cNext">Next &rarr;</button>
+            <button type="button" id="cPlay">Play</button>
+            <button type="button" id="cReset">Reset</button>
+          </div>
+        </div>
+      </div>
+      <p class="note">The native-double reference azimuth of this sight is about 144.952&deg;. In the transcript above,
+      method A prints 144.95 while B and C print 144.96 &mdash; adjacent cells of the declared 0.01&deg;
+      output grid, reached by different deterministic integer routes. That pair is pinned by the golden
+      schedule across the tested host compiler/backend matrix; the embedded profiles separately pin their
+      own scheduled outputs.</p>
+
+      <p>The same ladder in the machine's own digits &mdash; a <b>pedagogical</b> integer trace
+      (rotation mode, computing sin&nbsp;45&deg; = cos&nbsp;45&deg;; shown in Q2.30-style values with
+      micro-degree residuals for readability &mdash; the shipped library's actual state is
+      <b>Q16.48 over 48 iterations</b>, against an angle table it builds once at init by integer
+      series):</p>
+      <div class="cordic">
+        <table>
+          <tr><th>i</th><th>&sigma;</th><th>shift</th><th>x (cos path)</th><th>y (sin path)</th><th>z residual (&micro;deg)</th><th>table: atan 2<sup>&minus;i</sup></th></tr>
+          <tr><td>0</td><td class="sig">+1</td><td>&gt;&gt;0</td><td>652032874</td><td>652032874</td><td>0</td><td>45000000</td></tr>
+          <tr><td>1</td><td class="sig">+1</td><td>&gt;&gt;1</td><td>326016437</td><td>978049311</td><td>&minus;26565051</td><td>26565051</td></tr>
+          <tr><td>2</td><td class="sig">&minus;1</td><td>&gt;&gt;2</td><td>570528764</td><td>896545202</td><td>&minus;12528808</td><td>14036243</td></tr>
+          <tr><td>3</td><td class="sig">&minus;1</td><td>&gt;&gt;3</td><td>682596914</td><td>825229107</td><td>&minus;5403792</td><td>7125016</td></tr>
+          <tr><td>4</td><td class="sig">&minus;1</td><td>&gt;&gt;4</td><td>734173733</td><td>782566800</td><td>&minus;1827458</td><td>3576334</td></tr>
+          <tr><td>5</td><td class="sig">&minus;1</td><td>&gt;&gt;5</td><td>758628945</td><td>759623871</td><td>&minus;37547</td><td>1789911</td></tr>
+          <tr><td>&hellip;</td><td></td><td></td><td colspan="4" style="text-align:left; color:#8a92a6">each further row: one more bit of sin&nbsp;45&deg; = cos&nbsp;45&deg; = 0.7071&hellip;</td></tr>
+        </table>
+      </div>
+      <p class="note">Every cell is an integer. &sigma; is the rotation direction (sign of z); there is no
+      multiplication anywhere in the loop &mdash; only shifts, adds, and the angle table (48 entries in
+      the shipped library). The same ladder run in <b>vectoring</b> mode gives atan2 and asin, which is
+      how Zn comes out.</p>
+      <p>And one step further: <b>Method C</b> drops angles out of the hot path entirely. If the almanac
+      publishes each body as an integer <b>unit vector</b> (Q2.30 &mdash; 30 fractional bits), the whole
+      sight collapses to three dot products and a divide. Vega, from the built-in vector almanac:</p>
+      <pre class="transcript"><span class="cmd">$ ./sight_reduction --star 3 836136000000</span>
+Vega at UT1 J2000 +836136000000 ms:
+GHA Aries: 279.06 deg
+GHA:       359.61 deg
+dec:       38.81 deg
+earth-fixed vector: <span class="hl">(836698133, 5757400, 672922426)/2^30</span></pre>
+      <p class="note">sin&nbsp;Hc&nbsp;=&nbsp;O&nbsp;&middot;&nbsp;B as one integer dot product: the
+      measured hot-path cost on a laptop is ~7&nbsp;ns per sight against ~32&nbsp;ns for the double/libm
+      angle path. The 7&nbsp;ns figure starts from prebuilt vectors and returns machine-native outputs;
+      almanac construction and conversion back to human angles are deliberately outside that comparison.
+      Page 3 tours the whole chain.</p>
+    </div>
+  </section>
+
+  <div class="compare">
+    <table>
+      <tr><th>AGE</th><th>NUMBERS ON THE &ldquo;PAPER&rdquo;</th><th>MULTIPLY STRATEGY</th><th>PRECISION MODEL</th><th>REPRODUCIBILITY CLAIM</th></tr>
+      <tr>
+        <td style="color:#ffe66d">Log tables</td>
+        <td>5&ndash;6 digit integer mantissas</td>
+        <td>lookup + integer addition</td>
+        <td>declared: table step (~0.1&prime;)</td>
+        <td>same lookups and rounding give the same arithmetic sum</td>
+      </tr>
+      <tr>
+        <td style="color:#ff6b6b">Floating point</td>
+        <td>binary64: sign, exponent, 52-bit fraction</td>
+        <td>hardware arithmetic + platform libm</td>
+        <td>~16 digits, error varies per operation</td>
+        <td>not guaranteed by C/libm alone</td>
+      </tr>
+      <tr>
+        <td style="color:#4ecdc4">astro-nav-int</td>
+        <td>int64 fixed point (Q16.48, Q2.30, marcmin)</td>
+        <td>CORDIC shift/add; dot products</td>
+        <td>declared: 0.01&deg; grid (0.6&prime; step, at most 0.30&prime; rounding), gated</td>
+        <td>committed schedules on the tested matrix</td>
+      </tr>
+    </table>
+  </div>
+
+  <section style="margin-top:30px">
+    <div class="era-head e3">
+      <span class="tag">VERIFICATION</span>
+      <h2>The claim is checked on the artifact, not the source</h2>
+      <span class="sub">a compiler can smuggle floating point in; so the compiled images are inspected</span>
+    </div>
+    <div class="compare" style="margin-top:0">
+      <table>
+        <tr><th>LAYER</th><th>METHOD</th><th>RESULT</th></tr>
+        <tr><td style="color:#4ecdc4">Linked symbols</td>
+            <td>scan library, consumer, and embedded images for libm imports and compiler soft-float helpers</td>
+            <td>no floating-point imports</td></tr>
+        <tr><td style="color:#4ecdc4">Disassembly</td>
+            <td>inspect every embedded image for floating-point opcodes</td>
+            <td>zero FP instructions</td></tr>
+        <tr><td style="color:#4ecdc4">Cross-target execution</td>
+            <td>run 6 build profiles on Armv6-M, Cortex-M3, Cortex-M4 (built soft-float), RV32I, RV32IM under QEMU</td>
+            <td>all 30 per-profile hashes match the host bit-for-bit</td></tr>
+        <tr><td style="color:#4ecdc4">Arithmetic backend</td>
+            <td>compare native <code>__int128</code> against a portable two-limb C99 implementation</td>
+            <td>bit-identical outputs</td></tr>
+        <tr><td style="color:#4ecdc4">Resource envelope</td>
+            <td>measure freestanding images: flash, static RAM, painted-stack high-water</td>
+            <td>53&ndash;107 KB flash &middot; &le;416 B static RAM &middot; &lt;6 KB stack</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section style="margin-top:26px">
+    <div class="closing">
+      <b>So &ldquo;integer-only&rdquo; means:</b> the claim is about what the <b>machine executes</b>.
+      The shipping library and CLI contain no floating-point instructions and link no math library
+      &mdash; audited at the instruction level, with matching profile hashes across the host and five
+      QEMU target configurations. (The offline
+      reference generators and the native-double validation build do use floating point; the claim is
+      about the shipping runtime.) Conceptually it is not a rejection of
+      the old ways but a return to one of their disciplines: traditional tabular sight reduction showed
+      that the problem <i>can be carried out</i> with fixed-point arithmetic and well-chosen tables. This project keeps that discipline
+      &mdash; declared quantization steps, published worked answers, reproducible sums &mdash; and swaps
+      the human executing it for a small integer processor.
+    </div>
+  </section>
+
+  <div class="footer">
+    Transcripts: unedited output of <code>sight_reduction</code> v0.1.0 (golden hash
+    <code>0x3d6ddb7b86f2c7d2</code>). &nbsp;Next: <a href="human-machine.html">Human vs Machine &rarr;</a>
+    &nbsp;&middot;&nbsp; <a href="end-to-end.html">Navigation Chain &rarr;</a> &nbsp;&middot;&nbsp;
+    <a href="https://github.com/nmicic/astro-nav-int">source &amp; validation gates</a>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var TARGET = 144.952;
+  var trace = [
+    { s: "Start",    t: "none",                  b: 0.000,   c: "Needle at north. The dashed line is the azimuth this sight demands, 144.95 deg true. Every turn that follows uses one angle-table entry, two shifts, and additions or subtractions." },
+    { s: "Fold",     t: "+90.000 deg (exact)",   b: 90.000,  c: "One exact quadrant fold first - an integer swap of vector components. The arctan ladder converges within about +/-99.9 deg, so quadrants are handled by exact rotations before it starts." },
+    { s: "1 of 12",  t: "+45.000 deg",           b: 135.000, c: "The largest ladder turn, arctan(1), toward the target." },
+    { s: "2 of 12",  t: "+26.565 deg",           b: 161.565, c: "Overshot - the residual changes sign, and so will the next turn." },
+    { s: "3 of 12",  t: "-14.036 deg",           b: 147.529, c: "Back toward the target with the next smaller table entry." },
+    { s: "4 of 12",  t: "-7.125 deg",            b: 140.404, c: "Under now - the ladder brackets the answer ever more tightly." },
+    { s: "5 of 12",  t: "+3.576 deg",            b: 143.980, c: "Each entry is arctan(2^-i): the turn sizes halve, forever." },
+    { s: "6 of 12",  t: "+1.790 deg",            b: 145.770, c: "Over again, by less than a degree this time." },
+    { s: "7 of 12",  t: "-0.895 deg",            b: 144.875, c: "Within 0.08 deg of the reference azimuth." },
+    { s: "8 of 12",  t: "+0.448 deg",            b: 145.323, c: "The sign flips again as the bracket tightens." },
+    { s: "9 of 12",  t: "-0.224 deg",            b: 145.099, c: "Closing on the dashed line." },
+    { s: "10 of 12", t: "-0.112 deg",            b: 144.987, c: "Within 0.04 deg now." },
+    { s: "11 of 12", t: "-0.056 deg",            b: 144.931, c: "One more halving of the step." },
+    { s: "12 of 12", t: "+0.028 deg",            b: 144.959, c: "12 visible turns land within 0.007 deg. The shipped library continues to 48 iterations, closing the gap below a micro-degree - still nothing but shifts and adds." }
+  ];
+  var i = 0, timer = null;
+  var needle = document.getElementById("needleG");
+  var elS = document.getElementById("cStep"), elT = document.getElementById("cTurn");
+  var elB = document.getElementById("cBear"), elE = document.getElementById("cErr");
+  var elC = document.getElementById("cCap");
+  var bPrev = document.getElementById("cPrev"), bNext = document.getElementById("cNext");
+  var bPlay = document.getElementById("cPlay"), bReset = document.getElementById("cReset");
+
+  function render() {
+    var st = trace[i];
+    needle.style.transform = "rotate(" + st.b + "deg)";
+    elS.textContent = st.s;
+    elT.textContent = st.t;
+    elB.textContent = st.b.toFixed(3) + " deg";
+    elE.textContent = Math.abs(TARGET - st.b).toFixed(3) + " deg";
+    elC.textContent = st.c;
+    bPrev.disabled = i === 0;
+    bNext.disabled = i === trace.length - 1;
+  }
+  function stop() {
+    if (timer !== null) { window.clearInterval(timer); timer = null; }
+    bPlay.textContent = "Play";
+  }
+  bPrev.addEventListener("click", function () { stop(); if (i > 0) i--; render(); });
+  bNext.addEventListener("click", function () { stop(); if (i < trace.length - 1) i++; render(); });
+  bReset.addEventListener("click", function () { stop(); i = 0; render(); });
+  bPlay.addEventListener("click", function () {
+    if (timer !== null) { stop(); return; }
+    if (i === trace.length - 1) i = 0;
+    bPlay.textContent = "Pause";
+    render();
+    timer = window.setInterval(function () {
+      if (i >= trace.length - 1) { stop(); return; }
+      i++; render();
+    }, 760);
+  });
+  render();
+})();
+</script>
+</body>
+</html>

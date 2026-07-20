@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Human vs Machine — What a Number Means</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 20px; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(145deg, #050508 0%, #0a0a14 40%, #10101a 70%, #080810 100%);
+    color: #e0e0e0;
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    padding: 24px 16px 48px;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  .crumbs { font-size: 0.6rem; letter-spacing: 0; margin-bottom: 18px; }
+  .crumbs a { color: #8a92a6; text-decoration: none; }
+  .crumbs a:hover { color: #a855f7; }
+  .header { text-align: center; margin-bottom: 24px; }
+  .header h1 {
+    font-size: 1.35rem; font-weight: 300; letter-spacing: 0;
+    background: linear-gradient(90deg, #a855f7, #ff6b6b, #4ecdc4);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .header p { font-size: 0.66rem; letter-spacing: 0; color: #8a92a6; margin-top: 8px; line-height: 1.6; }
+  section { margin-bottom: 34px; }
+  h2 { font-size: 0.95rem; font-weight: 600; color: #eee; margin-bottom: 4px; }
+  .sub { font-size: 0.62rem; color: #8a92a6; margin-bottom: 12px; }
+  .panel {
+    background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px;
+    padding: 16px 18px; margin-bottom: 12px;
+  }
+  .panel p { font-size: 0.72rem; line-height: 1.7; color: #99a; margin-bottom: 10px; }
+  .panel p:last-child { margin-bottom: 0; }
+  .panel b { color: #ddd; font-weight: 600; }
+  .note { font-size: 0.6rem; color: #7b849b; line-height: 1.6; margin-top: 8px; }
+  .repr { margin: 10px 0; }
+  .repr-row {
+    display: grid; grid-template-columns: 190px 1fr; gap: 10px; align-items: start;
+    padding: 9px 12px; border-radius: 6px; margin-bottom: 6px;
+    background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.05);
+  }
+  @media (max-width: 700px) { .repr-row { grid-template-columns: 1fr; } }
+  .repr-row .k { font-size: 0.58rem; letter-spacing: 0; padding-top: 3px; }
+  .repr-row .v { font-size: 0.74rem; line-height: 1.55; word-break: break-all; color: #ccd; }
+  .repr-row.human { border-left: 2px solid #a855f7; } .repr-row.human .k { color: #a855f7; }
+  .repr-row.exact { border-left: 2px solid #4ecdc4; } .repr-row.exact .k { color: #4ecdc4; }
+  .repr-row.fp    { border-left: 2px solid #ff6b6b; } .repr-row.fp .k { color: #ff6b6b; }
+  .ok  { color: #9fd8d2; }
+  .bad { color: #ff6b6b; font-weight: 600; }
+  .rep { color: #8a92a6; }
+  .badge {
+    display: inline-block; font-size: 0.55rem; letter-spacing: 0; padding: 2px 8px;
+    border-radius: 3px; margin-left: 8px; vertical-align: middle;
+  }
+  .badge.exactb { background: rgba(78,205,196,0.12); color: #4ecdc4; border: 1px solid rgba(78,205,196,0.4); }
+  .badge.approxb { background: rgba(255,107,107,0.12); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.4); }
+  .widget {
+    background: rgba(168,85,247,0.04); border: 1px solid rgba(168,85,247,0.3); border-radius: 8px;
+    padding: 16px 18px; margin-bottom: 12px;
+  }
+  .widget .wlabel { font-size: 0.58rem; letter-spacing: 0; color: #a855f7; margin-bottom: 12px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+  .controls label { font-size: 0.62rem; color: #889; }
+  .controls input {
+    background: #04040a; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px;
+    color: #e0e0e0; font-family: inherit; font-size: 0.78rem; padding: 6px 9px; width: 90px;
+  }
+  .controls input:focus { outline: none; border-color: #a855f7; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .presets button {
+    background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); border-radius: 4px;
+    color: #99a; font-family: inherit; font-size: 0.6rem; padding: 5px 10px; cursor: pointer;
+  }
+  .presets button:hover { border-color: #a855f7; color: #cbd; }
+  .werr { font-size: 0.64rem; color: #ff6b6b; margin-bottom: 8px; display: none; }
+  .ladder { overflow-x: auto; }
+  .ladder-row { margin-bottom: 14px; min-width: 560px; }
+  .ladder-row .lname { font-size: 0.66rem; color: #ccd; margin-bottom: 5px; }
+  .ladder-row .lname span { color: #8a92a6; font-size: 0.58rem; margin-left: 8px; }
+  .bitbar { display: flex; height: 22px; border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+  .bitbar .seg { display: flex; align-items: center; justify-content: center; font-size: 0.52rem; letter-spacing: 0; white-space: nowrap; }
+  .seg.sgn  { background: rgba(255,255,255,0.10); color: #99a; }
+  .seg.ints { background: rgba(168,85,247,0.25); color: #d8c2f5; }
+  .seg.frac { background: rgba(78,205,196,0.22); color: #b5e8e3; }
+  .gates { overflow-x: auto; margin-top: 8px; }
+  .gates table { border-collapse: collapse; font-size: 0.66rem; width: 100%; min-width: 620px; }
+  .gates th, .gates td { padding: 7px 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .gates th { font-size: 0.55rem; letter-spacing: 0; color: #7b849b; font-weight: 400; }
+  .gates td { color: #aab; line-height: 1.5; }
+  .gates td:first-child { color: #ddd; white-space: nowrap; }
+  pre.transcript {
+    background: #04040a; border: 1px solid rgba(78,205,196,0.2); border-radius: 6px;
+    padding: 12px 14px; font-size: 0.68rem; line-height: 1.65; overflow-x: auto; color: #9fb;
+  }
+  pre.transcript .cmd { color: #4ecdc4; font-weight: 600; }
+  pre.transcript .hl { color: #ffe66d; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .chip {
+    font-size: 0.58rem; letter-spacing: 0; padding: 4px 10px; border-radius: 3px;
+    background: rgba(78,205,196,0.08); border: 1px solid rgba(78,205,196,0.3); color: #8fd6cf;
+  }
+  .closing {
+    background: rgba(168,85,247,0.05); border: 1px solid rgba(168,85,247,0.3); border-radius: 8px;
+    padding: 18px 20px; font-size: 0.76rem; line-height: 1.7; color: #c5b3d8;
+  }
+  .closing b { color: #eee; }
+  .footer { margin-top: 28px; font-size: 0.58rem; color: #7b849b; line-height: 1.7; }
+  .footer a { color: #4ecdc4; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="crumbs"><a href="index.html">&larr; INDEX</a></div>
+  <div class="header">
+    <h1>HUMAN vs MACHINE</h1>
+    <p>what a number means to the person who measured it, and to the chip that stores it</p>
+  </div>
+
+  <!-- THE READING -->
+  <section>
+    <h2>The reading</h2>
+    <div class="sub">the written drum reading already lies on a decimal grid</div>
+    <div class="panel">
+      <p>A micrometer sextant reads to a tenth of an arcminute. When the navigator writes down
+      <b>25&deg;14.3&prime;</b>, that is not &ldquo;approximately 25.238&deg;&rdquo; &mdash; it is an
+      <b>exact encoding of the recorded reading</b>: this many whole tenths of arcminutes on the drum.
+      (The physical observation behind it still carries observational error, of course &mdash; the
+      point here is the recorded value.) Human measurement is quantized by the instrument, and the
+      human knows it. The honest way to store that record is to keep it on its lattice:</p>
+      <div class="repr">
+        <div class="repr-row human">
+          <div class="k">WHAT THE HUMAN WROTE</div>
+          <div class="v">25&deg;14.3&prime;</div>
+        </div>
+        <div class="repr-row exact">
+          <div class="k">INTEGER (marcmin)</div>
+          <div class="v">1514300 milli-arcminutes
+            <span class="badge exactb">EXACT ENCODING</span></div>
+        </div>
+        <div class="repr-row fp">
+          <div class="k">BINARY64 DOUBLE</div>
+          <div class="v"><span class="ok">25.238333333333333</span><span class="bad">285963817615993320941925048828125</span>
+            <span class="badge approxb">NEAREST REPRESENTABLE</span></div>
+        </div>
+      </div>
+      <p>The exact rational value of the written record 25&deg;14.3&prime;, expressed in decimal degrees, is
+      25.238<span class="rep">3333&hellip; (the 3 repeats forever)</span> &mdash; a rational number,
+      1514300/60000. A binary double cannot hold most decimal fractions, so it stores the nearest
+      sum of powers of two. The red tail shows the exact binary64 value after conversion. The integer
+      form retains the written decimal value with zero <i>representation</i> error; neither representation
+      removes uncertainty from the original observation.</p>
+      <p class="note">Neither is &ldquo;wrong&rdquo; for navigation &mdash; the double's error here is
+      ~5&times;10<sup>&minus;17</sup> degrees, physically meaningless. The point is about
+      <b>bookkeeping</b>: the integer stores exactly the recorded value; the double stores the nearest
+      representable neighbor and rounds it back to look the same when printed. The difference is
+      invisible on the page &mdash; and visible the moment you hash the bits.</p>
+    </div>
+  </section>
+
+  <!-- PUNCTUATION -->
+  <section>
+    <h2>The decimal point is punctuation</h2>
+    <div class="sub">it appears where humans read, never where the machine computes</div>
+    <div class="panel">
+      <p>In goes <b>1514300</b> &mdash; the CLI takes the drum reading as a scaled integer, and there is
+      <b>no decimal parser anywhere in the program</b>. Out comes an altitude stored as <b>2901</b>
+      centidegrees and printed as &ldquo;29.01&rdquo; by integer division: quotient 29, remainder 01,
+      a period typeset between them. The dot is inserted <b>for the reader</b> &mdash; exactly as the
+      log-table navigator kept the decimal point in the margin of the worked page while the columns
+      underneath carried only digits. Floating point moved the point into the data itself, as a movable
+      per-value binary exponent; fixed point moves it back out into the <b>design</b>: agreed once,
+      written down, never carried at runtime.</p>
+    </div>
+  </section>
+
+  <!-- WIDGET -->
+  <section>
+    <h2>Try it: what does the machine hear?</h2>
+    <div class="sub">every digit below is computed live in this page, exactly, with integer (BigInt) long division &mdash; no rounding anywhere</div>
+    <div class="widget">
+      <div class="wlabel">TYPE A SEXTANT READING</div>
+      <div class="presets">
+        <button data-d="25" data-m="14.3">25&deg;14.3&prime; (the Hs on page 3)</button>
+        <button data-d="25" data-m="26.045">25&deg;26.045&prime; (its corrected Ho)</button>
+        <button data-d="45" data-m="0">45&deg;00.0&prime; (binary-friendly)</button>
+        <button data-d="0" data-m="0.1">0&deg;00.1&prime; (one drum tick)</button>
+      </div>
+      <div class="controls">
+        <label>degrees <input id="ideg" type="text" inputmode="numeric" value="25"></label>
+        <label>arcminutes <input id="imin" type="text" inputmode="decimal" value="14.3"></label>
+      </div>
+      <div class="werr" id="werr"></div>
+      <div class="repr" id="wout" aria-live="polite">
+        <div class="repr-row human"><div class="k">WHAT YOU WROTE</div><div class="v">25&deg;14.3&prime;</div></div>
+        <div class="repr-row exact"><div class="k">INTEGER (marcmin)</div><div class="v">1514300 milli-arcminutes <span class="badge exactb">EXACT ENCODING</span></div></div>
+        <div class="repr-row exact"><div class="k">EXACT WRITTEN VALUE (deg)</div><div class="v">25.2383333333333333333333333333333333333333333333<span class="rep">&hellip; (repeats)</span></div></div>
+        <div class="repr-row fp"><div class="k">BINARY64 DOUBLE</div><div class="v"><span class="ok">25.238333333333333</span><span class="bad">285963817615993320941925048828125</span> <span class="badge approxb">NEAREST REPRESENTABLE</span></div></div>
+      </div>
+      <p class="note">INTEGER row: milli-arcminutes, exact whenever the arcminutes have at most three
+      decimals (a real drum gives one). EXACT WRITTEN VALUE row: the record in decimal degrees, by exact long
+      division of the integer by 60000. DOUBLE row: the exact value of the binary64 number that
+      <code>degrees + arcmin/60</code> stores &mdash; expanded to <i>all</i> of its decimal digits from
+      its sign/exponent/fraction bits, with the digits that differ from the exact written value in red. Some
+      readings (like 45&deg;00.0&prime;) are sums of powers of two and survive intact; almost all others
+      do not.</p>
+    </div>
+  </section>
+
+  <!-- UNITS LADDER -->
+  <section>
+    <h2>The units ladder</h2>
+    <div class="sub">every quantity in the library lives on a declared integer lattice</div>
+    <div class="panel">
+      <div class="ladder">
+        <div class="ladder-row">
+          <div class="lname">centidegree &mdash; int32 <span>latitude / longitude at the CLI &middot; 1 step = 0.01&deg; = 0.6&prime;</span></div>
+          <div class="bitbar"><div class="seg sgn" style="width:6%">S</div><div class="seg ints" style="width:94%">31 integer bits &middot; 4000 means 40.00&deg;N</div></div>
+        </div>
+        <div class="ladder-row">
+          <div class="lname">milli-arcminute &mdash; int32 <span>altitudes and corrections &middot; 1 step = 0.001&prime; = 0.06&Prime;</span></div>
+          <div class="bitbar"><div class="seg sgn" style="width:6%">S</div><div class="seg ints" style="width:94%">31 integer bits &middot; 1514300 means 25&deg;14.300&prime;</div></div>
+        </div>
+        <div class="ladder-row">
+          <div class="lname">Q2.30 &mdash; int32 <span>unit vectors and sines &middot; 1 step = 2<sup>&minus;30</sup> &asymp; 9.3&times;10<sup>&minus;10</sup></span></div>
+          <div class="bitbar"><div class="seg sgn" style="width:6%">S</div><div class="seg ints" style="width:6%">1</div><div class="seg frac" style="width:88%">30 fraction bits &middot; 672922426 means 0.62670&hellip;</div></div>
+        </div>
+        <div class="ladder-row">
+          <div class="lname">Q16.48 &mdash; int64 <span>internal trigonometry &middot; 1 step = 2<sup>&minus;48</sup> &asymp; 3.6&times;10<sup>&minus;15</sup></span></div>
+          <div class="bitbar"><div class="seg sgn" style="width:3%">S</div><div class="seg ints" style="width:23%">15 magnitude bits</div><div class="seg frac" style="width:74%">48 fraction bits &middot; products widen to 128-bit intermediates</div></div>
+        </div>
+      </div>
+      <p class="note">Same shape as the navigator's toolkit: degrees-and-minutes on the notebook page,
+      five-place mantissas inside the log table, natural values at the end. Coarse lattices where humans
+      read, fine lattices where the arithmetic runs &mdash; and every conversion between rungs is an
+      integer operation with a defined rounding rule, not a format change with silent loss.</p>
+    </div>
+  </section>
+
+  <!-- HONEST ERROR -->
+  <section>
+    <h2>Quantization as an honest error model</h2>
+    <div class="sub">the tables declared their step; so does this library</div>
+    <div class="panel">
+      <p>A 1950s navigator knew the table step (0.1&prime;), the almanac step (0.1&prime;), and worked
+      inside them. Binary64 usually makes arithmetic quantization negligible at navigation scales, but
+      an application still needs an explicit model and output error budget. This library states those
+      scales and gates directly. Even
+      &ldquo;unit length&rdquo; is stated honestly: the Vega vector on page 1 squares to
+      |v|&sup2; = 1152921504834171165 against 2<sup>60</sup> = 1152921504606846976 &mdash; unit to one
+      part in 5&times;10<sup>9</sup>, an error that is <b>known, bounded, and gated</b>, not hidden.</p>
+      <div class="gates">
+        <table>
+          <tr><th>DECLARED STEP / GATE</th><th>WHAT IT PINS</th></tr>
+          <tr><td>0.01&deg; output grid</td><td>printed altitude, lat/lon, and azimuth round to centidegrees &mdash; at most 0.30&prime; from this final rounding alone; Method B's separately measured azimuth disagreement reaches 0.577&prime;</td></tr>
+          <tr><td>arcminute-level almanac budget</td><td>truncated ephemeris series carry a declared error budget, measured against oracles rather than assumed</td></tr>
+          <tr><td>--ephemeris-check &middot; 362 rows</td><td>star (270), Sun (45), and Moon (47) places vs an independent ephemeris stack (Skyfield + JPL DE421)</td></tr>
+          <tr><td>--external-check &middot; ~1,250 rows</td><td>printed Nautical Almanac / Air Almanac pages and published worked examples</td></tr>
+          <tr><td>--cross-check &middot; 411 rows</td><td>a separate computed implementation (PyEphem/libastro, with shared-model caveats reported by the checker) plus independent intercept geometry</td></tr>
+          <tr><td>--scenario-check &middot; 29 scenarios</td><td>whole-pipeline recovery against Skyfield scenarios, supplemented by separate published examples and intercept rows</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- DETERMINISM -->
+  <section>
+    <h2>And then: the same bits across tested builds</h2>
+    <div class="sub">the reproducibility guarantee this implementation actually checks</div>
+    <div class="panel">
+      <pre class="transcript"><span class="cmd">$ ./sight_reduction --golden</span>
+golden determinism hash: <span class="hl">0x3d6ddb7b86f2c7d2</span> (4096 cases + 9 edges)
+bit-exact against committed golden value: PASS</pre>
+      <p style="margin-top:10px">4096 pseudo-random sight reductions plus 9 hand-picked edge cases,
+      every output folded into one hash. The committed value reproduces <b>bit-for-bit</b> across the
+      CI matrix, on both arithmetic backends (native <code>__int128</code> and portable two-limb):</p>
+      <div class="chips">
+        <span class="chip">x86-64 &middot; gcc</span>
+        <span class="chip">x86-64 &middot; clang</span>
+        <span class="chip">arm64 &middot; clang</span>
+      </div>
+      <p style="margin-top:12px">And the same library, cross-compiled <b>freestanding</b> for five
+      32-bit MCU targets, runs six per-feature test schedules under QEMU whose <b>30 hashes all match
+      the host</b> bit-for-bit:</p>
+      <div class="chips">
+        <span class="chip">Armv6-M (QEMU)</span>
+        <span class="chip">Cortex-M3 (QEMU)</span>
+        <span class="chip">Cortex-M4 soft-float (QEMU)</span>
+        <span class="chip">RV32I (QEMU)</span>
+        <span class="chip">RV32IM (QEMU)</span>
+      </div>
+      <p class="note">The Cortex-M4 has an optional FPU on silicon but is deliberately built soft-float;
+      every embedded image is audited for zero FP opcodes and soft-float helpers. For the six committed
+      profile schedules, the freestanding targets produce the same bits as their host counterparts.
+      This is a measured property of the stated matrix and schedules, not a promise about every future
+      compiler or processor.</p>
+    </div>
+  </section>
+
+  <div class="closing">
+    <b>The human&ndash;machine contract, restated:</b> traditional tabular work used numbers on declared
+    decimal scales &mdash; drum tenths, five-place mantissas, table steps. Binary floating point uses a
+    movable binary scale instead; at sextant precision its representation error is irrelevant. This
+    library deliberately keeps the recorded values on explicit integer scales and verifies deterministic
+    output across its stated compiler, backend and embedded-profile matrix.
+  </div>
+
+  <div class="footer">
+    Live digits above are computed in-page from IEEE 754 bit patterns (view source &mdash; ~40 lines,
+    no libraries). &nbsp;Next: <a href="end-to-end.html">The Navigation Chain &rarr;</a> &nbsp;&middot;&nbsp;
+    <a href="three-ages.html">&larr; One Sight, Three Traditions</a> &nbsp;&middot;&nbsp;
+    <a href="https://github.com/nmicic/astro-nav-int">source &amp; validation gates</a>
+  </div>
+</div>
+
+<script>
+(function () {
+  var ideg = document.getElementById('ideg');
+  var imin = document.getElementById('imin');
+  var wout = document.getElementById('wout');
+  var werr = document.getElementById('werr');
+
+  // exact decimal expansion of a JS double from its IEEE 754 bits
+  function exactDouble(x) {
+    var dv = new DataView(new ArrayBuffer(8));
+    dv.setFloat64(0, x);
+    var bits = (BigInt(dv.getUint32(0)) << 32n) | BigInt(dv.getUint32(4));
+    var sign = (bits >> 63n) & 1n;
+    var exp = Number((bits >> 52n) & 0x7ffn);
+    var mant = bits & 0xfffffffffffffn;
+    var e;
+    if (exp === 0) { e = -1074; } else { mant |= 0x10000000000000n; e = exp - 1075; }
+    var intPart, frac = '';
+    if (e >= 0) {
+      intPart = (mant << BigInt(e)).toString();
+    } else {
+      var sh = BigInt(-e), mask = (1n << sh) - 1n;
+      intPart = (mant >> sh).toString();
+      var rem = mant & mask;
+      while (rem > 0n) {            // finite: denominator is a power of two
+        rem *= 10n;
+        frac += (rem >> sh).toString();
+        rem &= mask;
+      }
+    }
+    return { s: sign ? '-' : '', i: intPart, f: frac };
+  }
+
+  // exact decimal digits of marcmin/60000 by long division
+  function trueDecimal(marcmin, nFrac) {
+    var n = marcmin, d = 60000n;
+    var intPart = (n / d).toString();
+    var rem = n % d, frac = '';
+    for (var k = 0; k < nFrac && rem > 0n; k++) {
+      rem *= 10n;
+      frac += (rem / d).toString();
+      rem %= d;
+    }
+    return { i: intPart, f: frac, repeats: rem > 0n };
+  }
+
+  function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+
+  function render() {
+    werr.style.display = 'none';
+    var dRaw = ideg.value.trim(), mRaw = imin.value.trim();
+    if (!/^\d{1,3}$/.test(dRaw) || !/^\d{1,2}(\.\d{1,3})?$/.test(mRaw)) {
+      werr.textContent = 'degrees: whole number 0-179 - arcminutes: 0-59.999 (up to 3 decimals, like a real drum)';
+      werr.style.display = 'block'; wout.innerHTML = ''; return;
+    }
+    var deg = parseInt(dRaw, 10);
+    var mParts = mRaw.split('.');
+    var mInt = parseInt(mParts[0], 10);
+    var mFrac = (mParts[1] || '').padEnd(3, '0');
+    if (deg > 179 || mInt > 59) {
+      werr.textContent = 'degrees: whole number 0-179 - arcminutes: 0-59.999';
+      werr.style.display = 'block'; wout.innerHTML = ''; return;
+    }
+    // exact integer milli-arcminutes, by string arithmetic only
+    var marcmin = BigInt(deg) * 60000n + BigInt(mInt) * 1000n + BigInt(mFrac);
+
+    var t = trueDecimal(marcmin, 46);
+    var dbl = exactDouble(deg + parseFloat(mRaw) / 60);
+
+    // digit-compare the double against the exact written value
+    var tAll = t.f ? t.i + '.' + t.f : t.i;
+    var dAll = dbl.f ? dbl.i + '.' + dbl.f : dbl.i;
+    var cut = 0;
+    while (cut < dAll.length) {
+      var tc = cut < tAll.length ? tAll[cut]
+             : (t.repeats ? tAll[tAll.length - 1] : null); // repeating tail continues its last digit run
+      if (tc === null || dAll[cut] !== tc) break;
+      cut++;
+    }
+    var same = !t.repeats && dAll === tAll;
+
+    var trueHtml = esc(t.i) + (t.f ? '.' + esc(t.f) : '');
+    if (t.repeats) trueHtml += '<span class="rep">&hellip; (repeats)</span>';
+    var dblHtml = same
+      ? '<span class="ok">' + esc(dAll) + '</span>'
+      : '<span class="ok">' + esc(dAll.slice(0, cut)) + '</span><span class="bad">' + esc(dAll.slice(cut)) + '</span>';
+
+    wout.innerHTML =
+      '<div class="repr-row human"><div class="k">WHAT YOU WROTE</div><div class="v">' +
+        deg + '&deg;' + esc(mRaw) + '&prime;</div></div>' +
+      '<div class="repr-row exact"><div class="k">INTEGER (marcmin)</div><div class="v">' +
+        marcmin.toString() + ' milli-arcminutes <span class="badge exactb">EXACT ENCODING</span></div></div>' +
+      '<div class="repr-row exact"><div class="k">EXACT WRITTEN VALUE (deg)</div><div class="v">' + trueHtml + '</div></div>' +
+      '<div class="repr-row fp"><div class="k">BINARY64 DOUBLE</div><div class="v">' + dblHtml +
+        (same ? ' <span class="badge exactb">EXACT MATCH</span>'
+              : ' <span class="badge approxb">NEAREST REPRESENTABLE</span>') + '</div></div>';
+  }
+
+  ideg.addEventListener('input', render);
+  imin.addEventListener('input', render);
+  document.querySelectorAll('.presets button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      ideg.value = b.getAttribute('data-d');
+      imin.value = b.getAttribute('data-m');
+      render();
+    });
+  });
+  render();
+})();
+</script>
+</body>
+</html>

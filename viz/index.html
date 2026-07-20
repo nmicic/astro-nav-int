@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Integer-Only Celestial Navigation — a Visual Tour</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { font-size: 20px; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(145deg, #050508 0%, #0a0a14 40%, #10101a 70%, #080810 100%);
+    color: #e0e0e0;
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    padding: 24px 16px 48px;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  .header { text-align: center; margin-bottom: 26px; }
+  .header h1 {
+    font-size: 1.55rem; font-weight: 300; letter-spacing: 0;
+    background: linear-gradient(90deg, #ffe66d, #ff6b6b, #4ecdc4, #a855f7);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+  }
+  .header p { font-size: 0.68rem; letter-spacing: 0; color: #8a92a6; margin-top: 8px; }
+  .question {
+    background: rgba(255,230,109,0.05); border: 1px solid rgba(255,230,109,0.25);
+    border-radius: 8px; padding: 18px 20px; margin-bottom: 10px;
+    font-size: 0.78rem; line-height: 1.65; color: #cfc9a8;
+  }
+  .question .qlabel { font-size: 0.58rem; letter-spacing: 0; color: #b8a94f; margin-bottom: 8px; }
+  .answer {
+    background: rgba(78,205,196,0.05); border: 1px solid rgba(78,205,196,0.25);
+    border-radius: 8px; padding: 18px 20px; margin-bottom: 26px;
+    font-size: 0.78rem; line-height: 1.65; color: #a8cfc9;
+  }
+  .answer .qlabel { font-size: 0.58rem; letter-spacing: 0; color: #4ecdc4; margin-bottom: 8px; }
+  .answer b, .question b { color: #eee; font-weight: 600; }
+  .distinction { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 26px; }
+  @media (max-width: 820px) { .distinction { grid-template-columns: 1fr; } }
+  .distinction div {
+    background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px;
+    padding: 14px 15px;
+  }
+  .distinction .dlabel { font-size: 0.55rem; letter-spacing: 0; color: #a855f7; margin-bottom: 8px; }
+  .distinction p { font-size: 0.66rem; line-height: 1.65; color: #99a; }
+  .distinction b { color: #ddd; }
+  .limits { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 26px; }
+  @media (max-width: 820px) { .limits { grid-template-columns: 1fr 1fr; } }
+  .limits div {
+    background: rgba(255,107,107,0.04); border: 1px solid rgba(255,107,107,0.22); border-radius: 8px;
+    padding: 12px 13px;
+  }
+  .limits strong { display: block; font-size: 0.62rem; color: #ff8f8f; margin-bottom: 6px; font-weight: 600; }
+  .limits span { font-size: 0.6rem; line-height: 1.55; color: #889; }
+  .timeline { margin: 30px 0 34px; overflow-x: auto; }
+  .timeline svg { display: block; margin: 0 auto; min-width: 640px; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 820px) { .cards { grid-template-columns: 1fr; } }
+  a.card {
+    display: block; text-decoration: none; color: inherit;
+    background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 8px; padding: 18px 16px 16px; transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  a.card:hover { transform: translateY(-2px); }
+  a.card .num { font-size: 0.55rem; letter-spacing: 0; margin-bottom: 8px; }
+  a.card h2 { font-size: 0.95rem; font-weight: 600; margin-bottom: 8px; color: #eee; }
+  a.card p { font-size: 0.68rem; line-height: 1.6; color: #889; }
+  a.card .go {
+    display: inline-block; margin-top: 12px; font-size: 0.6rem; letter-spacing: 0;
+    padding: 6px 12px; border: 1px solid currentColor; border-radius: 5px;
+  }
+  a.card:hover .go { background: rgba(255,255,255,0.07); }
+  .cards-label { font-size: 0.58rem; letter-spacing: 0; color: #8a92a6; margin: 0 0 10px 2px; }
+  a.card.c1 { border-top: 2px solid #ffe66d; } a.card.c1:hover { border-color: rgba(255,230,109,0.5); }
+  a.card.c1 .num, a.card.c1 .go { color: #ffe66d; }
+  a.card.c2 { border-top: 2px solid #a855f7; } a.card.c2:hover { border-color: rgba(168,85,247,0.5); }
+  a.card.c2 .num, a.card.c2 .go { color: #a855f7; }
+  a.card.c3 { border-top: 2px solid #4ecdc4; } a.card.c3:hover { border-color: rgba(78,205,196,0.5); }
+  a.card.c3 .num, a.card.c3 .go { color: #4ecdc4; }
+  a.deep {
+    display: block; text-decoration: none; color: inherit; margin-top: 14px;
+    background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.07);
+    border-left: 2px solid #4ecdc4; border-radius: 8px; padding: 14px 16px;
+    transition: border-color 0.15s ease;
+  }
+  a.deep:hover { border-color: rgba(78,205,196,0.5); }
+  a.deep .num { font-size: 0.55rem; letter-spacing: 0; color: #4ecdc4; margin-bottom: 7px; }
+  a.deep p { font-size: 0.68rem; line-height: 1.6; color: #889; }
+  a.deep b { color: #ddd; }
+  a.deep code { color: #9aa; background: rgba(255,255,255,0.04); padding: 1px 5px; border-radius: 3px; }
+  a.deep .go {
+    display: inline-block; margin-top: 10px; font-size: 0.6rem; letter-spacing: 0;
+    color: #4ecdc4; padding: 5px 11px; border: 1px solid currentColor; border-radius: 5px;
+  }
+  a.deep:hover .go { background: rgba(255,255,255,0.07); }
+  .provenance {
+    margin-top: 30px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 8px; padding: 14px 18px; font-size: 0.62rem; line-height: 1.7; color: #8a92a6;
+  }
+  .provenance code { color: #9aa; background: rgba(255,255,255,0.04); padding: 1px 5px; border-radius: 3px; }
+  .provenance a { color: #4ecdc4; text-decoration: none; }
+  .tl-label { font-size: 11px; fill: #99a; }
+  .tl-sub { font-size: 9px; fill: #7b849b; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>INTEGER-ONLY CELESTIAL NAVIGATION</h1>
+    <p>a visual tour of astro-nav-int &mdash; an integer-only shipping runtime for celestial navigation</p>
+  </div>
+
+  <div class="question">
+    <div class="qlabel">A QUESTION FROM THE CELESTIAL-NAVIGATION COMMUNITY</div>
+    &ldquo;From a certain perspective, celestial navigation calculations were <b>always</b> integer-only.
+    In mathematical computation this would usually be termed <b>fixed-point arithmetic</b>. Especially in
+    the Age of Sail, navigators worked spherical trigonometry by adding up five- or six-digit logarithms.
+    When you see the work on paper, they're doing plain addition of five- or six-digit integers.&rdquo;
+  </div>
+  <div class="answer">
+    <div class="qlabel">THE SHORT ANSWER</div>
+    Exactly right &mdash; traditional tabular reduction was <b>fixed-point in spirit</b>, and this project
+    does not claim new mathematics. Its narrower claim is about the executable artifact: the shipping C
+    library and CLI represent runtime quantities on explicit integer scales and perform the navigation
+    calculations, including trigonometry and ephemerides, without IEEE-754 operations or <code>libm</code>.
+    The tested builds reproduce their pinned schedules bit for bit. That is a determinism and constrained-
+    computer experiment, not an accuracy advantage over binary floating point. The pages below make the
+    distinction concrete with verbatim runs of the shipped program.
+  </div>
+
+  <div class="distinction">
+    <div>
+      <div class="dlabel">WHERE THE FRACTION LIVES</div>
+      <p>Not old math vs new math. In tables and in this library the fraction sits in a <b>scale agreed
+      in advance</b> &mdash; five decimal places, or a fixed binary denominator like 2<sup>48</sup>. In
+      floating point every value carries its <b>own movable exponent</b>, and the scale travels with the
+      data instead of the design.</p>
+    </div>
+    <div>
+      <div class="dlabel">WHERE THE HARD FUNCTIONS COME FROM</div>
+      <p>Sines and logarithms are transcendental; someone must supply them. The navigator's came from
+      <b>books computed before the voyage</b>. A conventional C program often gets them from <b>libm at
+      runtime</b>. Here
+      they come from <b>integer ladders</b> (48-step CORDIC) and a small angle table the library builds
+      once, at init, by integer series.</p>
+    </div>
+    <div>
+      <div class="dlabel">WHAT THE MACHINE EXECUTES</div>
+      <p>The checkable claim is at the instruction level: the shipping images contain <b>no
+      floating-point operation and import no math library</b>. Host builds pass compile and symbol audits;
+      five ARM/RISC-V configurations run separate freestanding profiles under QEMU, with symbol and opcode
+      audits and hashes matched to the host. Offline reference generators and the native-double test build
+      deliberately use floating point; they are outside the shipping runtime claim.</p>
+    </div>
+  </div>
+
+  <div class="timeline">
+    <svg viewBox="0 0 720 118" width="100%" height="118" role="img" aria-label="Timeline: log tables, floating point, machine fixed point">
+      <line x1="30" y1="46" x2="690" y2="46" stroke="#333" stroke-width="1.5"/>
+      <circle cx="120" cy="46" r="7" fill="#0a0a14" stroke="#ffe66d" stroke-width="2"/>
+      <text x="120" y="20" text-anchor="middle" class="tl-label" fill="#ffe66d">1700s&ndash;1900s</text>
+      <text x="120" y="72" text-anchor="middle" class="tl-label">log tables + haversines</text>
+      <text x="120" y="88" text-anchor="middle" class="tl-sub">fixed point, computed by hand</text>
+      <circle cx="360" cy="46" r="7" fill="#0a0a14" stroke="#ff6b6b" stroke-width="2"/>
+      <text x="360" y="20" text-anchor="middle" class="tl-label" fill="#ff6b6b">MID-20TH C.&rarr;</text>
+      <text x="360" y="72" text-anchor="middle" class="tl-label">binary floating point</text>
+      <text x="360" y="88" text-anchor="middle" class="tl-sub">sin/cos from a math library</text>
+      <circle cx="600" cy="46" r="7" fill="#0a0a14" stroke="#4ecdc4" stroke-width="2"/>
+      <text x="600" y="20" text-anchor="middle" class="tl-label" fill="#4ecdc4">astro-nav-int</text>
+      <text x="600" y="72" text-anchor="middle" class="tl-label">machine fixed point</text>
+      <text x="600" y="88" text-anchor="middle" class="tl-sub">int64 + shift/add, no FPU, no libm</text>
+    </svg>
+  </div>
+
+  <div class="cards-label">THREE DEEP-DIVE PAGES &mdash; each card opens one</div>
+  <div class="cards">
+    <a class="card c1" href="three-ages.html">
+      <div class="num">PAGE 1</div>
+      <h2>One Sight, Three Traditions</h2>
+      <p>One sight, three ways &mdash; Age-of-Sail log-haversine addition, floating point, and
+         integer CORDIC &mdash; all landing on <b>Hc&nbsp;66.68&deg;</b>.</p>
+      <div class="go">OPEN &rarr;</div>
+    </a>
+    <a class="card c2" href="human-machine.html">
+      <div class="num">PAGE 2</div>
+      <h2>Human vs Machine</h2>
+      <p>A written sextant reading has an <b>exact scaled-integer encoding</b>; binary64 stores a nearby
+         binary fraction. This page separates representation error from observational error.</p>
+      <div class="go">OPEN &rarr;</div>
+    </a>
+    <a class="card c3" href="end-to-end.html">
+      <div class="num">PAGE 3</div>
+      <h2>The Navigation Chain</h2>
+      <p>A guided tour from clock to fix in eight CLI verbs, followed by one coherent synthetic Sun sight
+         through prediction, correction, and reduction. Every command block is a verbatim transcript.</p>
+      <div class="go">OPEN &rarr;</div>
+    </a>
+  </div>
+
+  <a class="deep" href="https://nmicic.github.io/int-llm/viz/">
+    <div class="num">UNDER THE HOOD &mdash; fp_math.h</div>
+    <p>These pages show the navigation layer. For how the <b>main functions themselves stay
+       integer-only</b> &mdash; the fixed-point formats and the shift-and-add ladders behind sin, cos
+       and atan2 in the single-header <code>fp_math.h</code> &mdash; see the companion visualization
+       of the underlying math library.</p>
+    <div class="go">nmicic.github.io/int-llm/viz &rarr;</div>
+  </a>
+
+  <div class="limits">
+    <div><strong>Not faster by default</strong><span>Hardware doubles win the arithmetic race on a
+      laptop (~32 ns vs ~300 ns per sight for the CORDIC path). Only the vector-almanac method wins
+      (~7 ns) &mdash; by changing the representation, not by racing.</span></div>
+    <div><strong>Not mathematically exact</strong><span>Finite scales, truncated series, and rounding
+      remain &mdash; declared and gated (0.01&deg; output grid, at most 0.30&prime; rounding on that grid,
+      plus separate arcminute-level almanac budgets)
+      rather than hidden.</span></div>
+    <div><strong>Not board-measured yet</strong><span>The five embedded targets run under QEMU
+      emulation, not on physical silicon; instruction counts are architectural, not cycle-accurate.</span></div>
+    <div><strong>Not a navigation instrument</strong><span>An experimental research library with
+      computational validation; it has not yet ridden a real sextant through a real field trial.</span></div>
+  </div>
+
+  <div class="provenance">
+    Every block labelled as a CLI transcript is unedited output of the shipped
+    <code>sight_reduction</code> binary (v0.1.0). Its 4096-case determinism schedule is pinned to the
+    golden hash <code>0x3d6ddb7b86f2c7d2</code> on x86-64 (gcc and clang) and arm64 (clang); five
+    freestanding embedded targets under QEMU reproduce their own committed per-feature hashes.
+    Source, tests, and validation gates:
+    <a href="https://github.com/nmicic/astro-nav-int">github.com/nmicic/astro-nav-int</a>.
+    Companion visualizations of the underlying integer math library:
+    <a href="https://nmicic.github.io/int-llm/viz/">nmicic.github.io/int-llm/viz</a>.
+  </div>
+</div>
+</body>
+</html>
