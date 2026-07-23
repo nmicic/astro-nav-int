@@ -19,8 +19,12 @@ const char profile_name[] = "fix";
 static void rng_unitvec(uint64_t *s, int32_t lat_lim,
                         astro_nav_unitvec_t *out)
 {
-    astro_nav_unitvec_from_cdeg(emb_rng_range(s, -lat_lim, lat_lim),
-                                emb_rng_range(s, -17999, 18000), out);
+    /* One sequenced statement per draw: unspecified argument evaluation
+     * order (C99 6.5.2.2p10) made the lat/lon draw order differ between
+     * compilers. */
+    int32_t lat = emb_rng_range(s, -lat_lim, lat_lim);
+    int32_t lon = emb_rng_range(s, -17999, 18000);
+    astro_nav_unitvec_from_cdeg(lat, lon, out);
 }
 
 uint64_t profile_run(void)
@@ -35,10 +39,10 @@ uint64_t profile_run(void)
         astro_nav_unitvec_from_cdeg(lat, lon, &truth);
         rng_unitvec(&s, 8900, &b1);
         rng_unitvec(&s, 8900, &b2);
-        astro_nav_unitvec_from_cdeg(emb_clip(lat + emb_rng_range(&s, -300, 300),
-                                             -9000, 9000),
-                                    emb_clip(lon + emb_rng_range(&s, -300, 300),
-                                             -18000, 18000),
+        int32_t dlat = emb_rng_range(&s, -300, 300);
+        int32_t dlon = emb_rng_range(&s, -300, 300);
+        astro_nav_unitvec_from_cdeg(emb_clip(lat + dlat, -9000, 9000),
+                                    emb_clip(lon + dlon, -18000, 18000),
                                     &hint);
 
         astro_nav_machine_sight_t s1, s2;
@@ -84,10 +88,10 @@ uint64_t profile_run(void)
         astro_nav_unitvec_t truth, seed, bodies[4];
         int32_t sins[4];
         astro_nav_unitvec_from_cdeg(lat, lon, &truth);
-        astro_nav_unitvec_from_cdeg(emb_clip(lat + emb_rng_range(&s, -400, 400),
-                                             -9000, 9000),
-                                    emb_clip(lon + emb_rng_range(&s, -400, 400),
-                                             -18000, 18000),
+        int32_t dlat = emb_rng_range(&s, -400, 400);
+        int32_t dlon = emb_rng_range(&s, -400, 400);
+        astro_nav_unitvec_from_cdeg(emb_clip(lat + dlat, -9000, 9000),
+                                    emb_clip(lon + dlon, -18000, 18000),
                                     &seed);
         for (int i = 0; i < 4; i++) {
             astro_nav_machine_sight_t ms;

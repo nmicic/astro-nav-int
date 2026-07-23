@@ -23,18 +23,21 @@ uint64_t profile_run(void)
 
     astro_nav_unitvec_t obs[N_OBS], body[N_BODY];
     for (int i = 0; i < N_OBS; i++) {
-        astro_nav_unitvec_from_cdeg(emb_rng_range(&s, -8900, 8900),
-                                    emb_rng_range(&s, -17999, 18000),
-                                    &obs[i]);
+        /* One sequenced statement per draw: two side-effecting calls in
+         * one argument list have unspecified evaluation order (C99
+         * 6.5.2.2p10) and produced different schedules per compiler. */
+        int32_t lat = emb_rng_range(&s, -8900, 8900);
+        int32_t lon = emb_rng_range(&s, -17999, 18000);
+        astro_nav_unitvec_from_cdeg(lat, lon, &obs[i]);
         h = fnv1a_i32(h, obs[i].x);
         h = fnv1a_i32(h, obs[i].y);
         h = fnv1a_i32(h, obs[i].z);
     }
     for (int i = 0; i < N_BODY; i++) {
         /* A body enters as declination and MINUS its GHA. */
-        astro_nav_unitvec_from_cdeg(emb_rng_range(&s, -8900, 8900),
-                                    -emb_rng_range(&s, 0, 35999),
-                                    &body[i]);
+        int32_t dec = emb_rng_range(&s, -8900, 8900);
+        int32_t gha = emb_rng_range(&s, 0, 35999);
+        astro_nav_unitvec_from_cdeg(dec, -gha, &body[i]);
         h = fnv1a_i32(h, body[i].x);
         h = fnv1a_i32(h, body[i].y);
         h = fnv1a_i32(h, body[i].z);

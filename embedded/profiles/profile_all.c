@@ -174,17 +174,19 @@ uint64_t profile_run(void)
                                     &hint);
         for (int i = 0; i < 5; i++) {
             astro_nav_machine_sight_t ms;
-            astro_nav_unitvec_from_cdeg(emb_rng_range(&s, -8900, 8900),
-                                        emb_rng_range(&s, -17999, 18000),
-                                        &bodies[i]);
+            /* One sequenced statement per draw (unspecified argument
+             * evaluation order, C99 6.5.2.2p10). */
+            int32_t blat = emb_rng_range(&s, -8900, 8900);
+            int32_t blon = emb_rng_range(&s, -17999, 18000);
+            astro_nav_unitvec_from_cdeg(blat, blon, &bodies[i]);
             astro_nav_reduce_method_c(&truth, &bodies[i], &ms);
             sins[i] = ms.sin_hc_q30;
         }
 
         astro_nav_unitvec_t adv;
-        astro_nav_advance_body_for_run(&bodies[0], &hint,
-                                       emb_rng_range(&s, 0, 35999),
-                                       emb_rng_range(&s, -6000, 6000), &adv);
+        int32_t course = emb_rng_range(&s, 0, 35999);
+        int32_t run    = emb_rng_range(&s, -6000, 6000);
+        astro_nav_advance_body_for_run(&bodies[0], &hint, course, run, &adv);
         h = hash_vec(h, &adv);
 
         astro_nav_fix_result_t fr;

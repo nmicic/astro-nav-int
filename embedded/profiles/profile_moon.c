@@ -48,10 +48,12 @@ uint64_t profile_run(void)
         int limb = k % 3 - 1;
         h = fnv1a_i64(h, astro_nav_correct_altitude_moon_marcmin(
                               hs, ie, eye, hp, sd, limb));
+        /* One sequenced statement per draw (unspecified argument
+         * evaluation order, C99 6.5.2.2p10). */
+        int32_t temp  = emb_rng_range(&s, -40, 45);
+        int32_t press = emb_rng_range(&s, 900, 1050);
         h = fnv1a_i64(h, astro_nav_correct_altitude_moon_tp_marcmin(
-                              hs, ie, eye, hp, sd, limb,
-                              emb_rng_range(&s, -40, 45),
-                              emb_rng_range(&s, 900, 1050)));
+                              hs, ie, eye, hp, sd, limb, temp, press));
         h = fnv1a_i64(h, astro_nav_moon_augmentation_marcmin(
                               emb_rng_range(&s, -5400000, 5400000), hp, sd));
     }

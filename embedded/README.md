@@ -79,8 +79,9 @@ hardware stack watermark.
   `astro_nav.o` and keeps none of it.
 - **Bit-exactness is the test.** A profile's hash spans every output
   of its schedule (including `valid` flags and degenerate cases), so
-  host-equality is a known-answer test of the whole slice, same
-  construction as the repo's golden battery.
+  host-equality is a cross-target differential test of the whole
+  slice: the expected value is computed by the host at run time, not
+  committed like the repo's golden hash.
 - **Stack** is measured two ways: runtime high-water (startup paints a
   32 KB window below the initial SP with a pattern; the harness scans
   for the deepest overwrite) and static per-frame maxima

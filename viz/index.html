@@ -225,7 +225,7 @@
     Every block labelled as a CLI transcript is unedited output of the shipped
     <code>sight_reduction</code> binary (v0.1.0). Its 4096-case determinism schedule is pinned to the
     golden hash <code>0x3d6ddb7b86f2c7d2</code> on x86-64 (gcc and clang) and arm64 (clang); five
-    freestanding embedded targets under QEMU reproduce their own committed per-feature hashes.
+    freestanding embedded targets under QEMU match the host's per-feature hashes bit for bit.
     Source, tests, and validation gates:
     <a href="https://github.com/nmicic/astro-nav-int">github.com/nmicic/astro-nav-int</a>.
     Companion visualizations of the underlying integer math library:
