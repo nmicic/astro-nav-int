@@ -1,6 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  * Copyright (c) 2026 Nenad Micic <nenad@micic.be>
+ * LinkedIn: https://be.linkedin.com/in/nenadmicic
  *
  * sight_reduction.c -- celestial navigation sight reduction in PURE
  * INTEGER math.  No float, no double, no libm anywhere in the

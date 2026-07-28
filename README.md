@@ -1,5 +1,7 @@
 # astro-nav-int - celestial sight reduction in integer math
 
+**Author:** Nenad Micic, Belgium -- [LinkedIn](https://be.linkedin.com/in/nenadmicic)
+
 Celestial navigation answers "where am I?" with a sextant, a clock, and
 an almanac: measure how high a star, the Sun, or the Moon stands above
 the horizon and record the time. One sight places you on a circle

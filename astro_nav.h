@@ -1,6 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  * Copyright (c) 2026 Nenad Micic <nenad@micic.be>
+ * LinkedIn: https://be.linkedin.com/in/nenadmicic
  *
  * astro_nav.h -- small integer-only celestial-navigation primitives.
  */
