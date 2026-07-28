@@ -71,9 +71,11 @@ Numbers: [Current Validation Snapshot](#current-validation-snapshot).
 **What it is not.** Not a navigation instrument (an experimental
 research library -- carry the paper tables). No planet ephemerides,
 star identification, camera capture, plate solving, sensor fusion, or
-formal uncertainty propagation from sight to fix. Validation is
-computational, including published observation logs; this release does
-not claim an author-run sextant field trial or a physical-board run.
+formal uncertainty propagation from sight to fix. Navigation-output
+validation is computational, including published observation logs.
+Hardware validation is limited to the deterministic profile-hash runs
+reported below; this release does not claim an author-run sextant field
+trial.
 
 ## Framing
 
@@ -661,10 +663,35 @@ its boundary readouts ~34 K executed instructions, a Sun almanac entry
 computed both inertial and earth-fixed ~240 K, and a Moon entry with
 its correction chain ~3.5 M -- and the linked image fits the
 micro:bit nRF51822 memory map (256 KB flash, 16 KB RAM) with room to
-spare. This is QEMU and toolchain evidence, not a physical-board test.
-The RV32I-vs-RV32IM and Armv6-M-vs-M3/M4 columns put numbers on what
+spare. The RV32I-vs-RV32IM and Armv6-M-vs-M3/M4 columns put numbers on what
 software multiply/divide costs this workload: 1.6-3.6x the instructions, depending on how
 divide-heavy the feature is.
+
+The QEMU gate has since been repeated on physical silicon: eleven
+operator-run PASSes across four ISA families, every board reproducing
+the host-computed profile hash bit-exactly (per-board records, harness
+configs, and raw serial transcripts in [`embedded/hw/`](embedded/hw/)).
+Runtimes are informational and report one profile pass per result; all
+targets except the Uno use the full `all` profile:
+
+| board | core | result |
+|---|---|---|
+| ESP32-C6 devkit | RISC-V RV32IMAC | PASS, 274 ms |
+| Raspberry Pi Pico 2 | Cortex-M33 (ARM) | PASS, 188 ms |
+| Raspberry Pi Pico 2 (same board) | Hazard3 (RISC-V) | PASS, 272 ms |
+| Seeed XIAO RP2040 | Cortex-M0+, no HW divide | PASS, 501 ms |
+| Seeed XIAO nRF52840 Sense | Cortex-M4F (FPU present, unused) | PASS, 689 ms |
+| Heltec WiFi LoRa 32 V3 | ESP32-S3, Xtensa LX7 | PASS, 186 ms |
+| LILYGO T-Beam | ESP32, Xtensa LX6 | PASS, 195 ms |
+| Arduino Mega 2560 | ATmega2560, 8-bit AVR @ 16 MHz | PASS, ~26.5 s |
+| Arduino Uno (R1/R2-era) | ATmega328P — `core` and `sun` slices | PASS, 2.6 s / 9.1 s |
+| Raspberry Pi 1 B+ (2014) | ARM1176, ARMv6 Linux, native distro gcc | PASS, 71 ms |
+
+The Uno results are feature slices because the full library does not fit
+32 KB of flash (measured slice sizes in `embedded/hw/README.md`); the
+Mega 2560 runs the complete profile. The Pi 1 row is a different kind
+of evidence: compiled natively on the board by Raspbian's own gcc — no
+cross toolchain — and still bit-identical to the macOS reference.
 
 ## Visual guide
 

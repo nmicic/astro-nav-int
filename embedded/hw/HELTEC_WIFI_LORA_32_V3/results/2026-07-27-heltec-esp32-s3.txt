@@ -1,0 +1,12 @@
+# run 2026-07-27T16:34:56Z
+# target-folder HELTEC_WIFI_LORA_32_V3 env heltec_v3
+# firmware sha256 277826d234a86541799a6f5408ba2d2823e53cb3040d6a8e78a7d0e4134a5dbe
+# platform https://github.com/pioarduino/platform-espressif32/releases/download/54.03.21-2/platform-espressif32.zip
+# PlatformIO Core             6.1.19
+# Python                      3.14.6-final.0
+port: /dev/cu.usbserial-0001
+target heltec-esp32-s3 arch xtensa tree 055eb70ac8a6 PROFILE all hash 37d6a1208d99182f (186 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
+target heltec-esp32-s3 arch xtensa tree 055eb70ac8a6 PROFILE all hash 37d6a1208d99182f (186 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
+capture: OK target=heltec-esp32-s3 arch=xtensa tree=055eb70ac8a6 profile=all hash=37d6a1208d99182f

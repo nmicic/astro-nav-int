@@ -1,0 +1,14 @@
+# Harnesses carry NO copies of the library sources: prepare.sh copies them
+# from the repo root at build time. Committed content is only the harness
+# glue (platformio.ini, prepare.sh, src/main.cpp), READMEs, and results.
+*/harness/src/astro_nav.c
+*/harness/src/profile_*.c
+*/harness/include/astro_nav.h
+*/harness/include/fp_math.h
+*/harness/include/harness.h
+# generated at prepare time
+*/harness/include/build_info.h
+*/harness/include/profile_pin.h
+# build + host-reference artifacts
+*/harness/.pio/
+*/harness/.hostref/

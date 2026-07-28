@@ -1,0 +1,12 @@
+# run 2026-07-27T15:25:18Z
+# target-folder ARDUINO_MEGA2560 env mega2560_all
+# firmware sha256 2918a012bbd0f7694bd097b052696202de937cc28737ab1a830f86903e44b058
+# platform atmelavr@5.3.0
+# PlatformIO Core             6.1.19
+# Python                      3.14.6-final.0
+port: /dev/cu.usbmodem1101
+target mega2560-all arch avr8 tree 055eb70ac8a6 PROFILE all hash 37d6a1208d99182f (26545 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
+target mega2560-all arch avr8 tree 055eb70ac8a6 PROFILE all hash 37d6a1208d99182f (26468 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
+capture: OK target=mega2560-all arch=avr8 tree=055eb70ac8a6 profile=all hash=37d6a1208d99182f

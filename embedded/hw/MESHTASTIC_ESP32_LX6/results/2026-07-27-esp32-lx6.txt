@@ -1,0 +1,12 @@
+# run 2026-07-27T16:44:03Z
+# target-folder MESHTASTIC_ESP32_LX6 env esp32_lx6
+# firmware sha256 bbd775e2faf10c27a3bdca91b031733b133d7626e0bdf9447a033bb87620fb0f
+# platform https://github.com/pioarduino/platform-espressif32/releases/download/54.03.21-2/platform-espressif32.zip
+# PlatformIO Core             6.1.19
+# Python                      3.14.6-final.0
+port: /dev/cu.usbserial-58971216971
+target esp32-lx6 arch xtensa tree 055eb70ac8a6 PROFILE all hash 37d6a1208d99182f (195 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
+target esp32-lx6 arch xtensa tree 055eb70ac8a6 PROFILE all hash 37d6a1208d99182f (195 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
+capture: OK target=esp32-lx6 arch=xtensa tree=055eb70ac8a6 profile=all hash=37d6a1208d99182f

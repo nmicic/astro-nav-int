@@ -1,0 +1,13 @@
+# run 2026-07-27T15:08:56Z
+# target-folder PI_PICO_RP2350_RISCV env pico2riscv
+# firmware sha256 263ee800c4bf75a026cb5249c58eb4cdac5e9171beecf31fce3a1e6e32b0d43d
+# platform https://github.com/maxgerhardt/platform-raspberrypi.git#aa70b802be8851668053d4f09734e4089fe41932
+# PlatformIO Core             6.1.19
+# Python                      3.14.6-final.0
+port: /dev/cu.usbmodem1101
+port: /dev/cu.usbmodem1101
+target pico2-riscv arch rv32 tree 055eb70ac8a6 PROFILE all hash 37d6a1208d99182f (272 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
+target pico2-riscv arch rv32 tree 055eb70ac8a6 PROFILE all hash 37d6a1208d99182f (272 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
+capture: OK target=pico2-riscv arch=rv32 tree=055eb70ac8a6 profile=all hash=37d6a1208d99182f

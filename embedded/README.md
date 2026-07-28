@@ -62,10 +62,12 @@ Cortex-M3/M4-softfloat on mps2-an385/386, `rv32i`/`rv32im` on the
 core, and the audits prove neither an FP opcode nor a soft-float
 helper slips in.
 
-No physical board has been tested in this phase. QEMU establishes
-instruction-set execution and deterministic output; it does not test
-startup behavior on silicon, peripheral integration, real cycles, or a
-hardware stack watermark.
+QEMU establishes instruction-set execution and deterministic output; it
+does not test startup behavior on silicon, peripheral integration, real
+cycles, or a hardware stack watermark. Operator-run records from
+physical boards — eleven PASSes across four ISA families (ARM, RISC-V,
+AVR8, Xtensa), each reproducing the host-computed profile hash
+bit-exactly — live in [`hw/`](hw/).
 
 ## Methodology
 
@@ -214,5 +216,6 @@ libgcc integer helpers, and a scratch copy of a real image with
 
 The tightest linked image fits the nRF51822 memory map with room to
 spare: `all` uses 79 KB of 256 KB flash and 6.2 KB of 16 KB RAM
-including the QEMU-measured stack. Physical-board behavior remains
-unverified as stated above.
+including the QEMU-measured stack. Physical-board profile-hash runs are
+recorded in [`hw/`](hw/); they verify deterministic output on those
+devices, but do not provide a hardware stack watermark.

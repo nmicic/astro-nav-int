@@ -1,0 +1,12 @@
+# run 2026-07-27T15:02:37Z
+# target-folder ESP32_C6 env esp32c6
+# firmware sha256 9e4ec1e489280085b349cbe8179d5b1a1317c3c2c03eaa3dc5a9bacc595ac8c3
+# platform https://github.com/pioarduino/platform-espressif32/releases/download/54.03.21-2/platform-espressif32.zip
+# PlatformIO Core             6.1.19
+# Python                      3.14.6-final.0
+port: /dev/cu.usbmodem5B610947371
+target esp32-c6 arch rv32 tree 055eb70ac8a6 PROFILE all hash 37d6a1208d99182f (274 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
+target esp32-c6 arch rv32 tree 055eb70ac8a6 PROFILE all hash 37d6a1208d99182f (274 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
+capture: OK target=esp32-c6 arch=rv32 tree=055eb70ac8a6 profile=all hash=37d6a1208d99182f

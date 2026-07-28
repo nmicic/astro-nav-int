@@ -1,0 +1,12 @@
+# run 2026-07-27T15:18:33Z
+# target-folder ARDUINO_UNO env uno_core
+# firmware sha256 196bde6cf609e5726f5ba4107518ce29dc9713fb116aa1920447f808d8f3711e
+# platform atmelavr@5.3.0
+# PlatformIO Core             6.1.19
+# Python                      3.14.6-final.0
+port: /dev/cu.usbmodem1101
+target uno-core arch avr8 tree 055eb70ac8a6 PROFILE core hash c06268fe1c98abe4 (2621 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
+target uno-core arch avr8 tree 055eb70ac8a6 PROFILE core hash c06268fe1c98abe4 (2551 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
+capture: OK target=uno-core arch=avr8 tree=055eb70ac8a6 profile=core hash=c06268fe1c98abe4

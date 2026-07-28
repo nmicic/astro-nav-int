@@ -1,0 +1,13 @@
+# run 2026-07-27T15:31:21Z
+# target-folder XIAO_NRF52840_SENSE env xiao_nrf52840
+# firmware sha256 785dfca8eb1c29a9d6995a6a8aeb9daca963d3bc144e1719886a345550f9a8f1
+# platform https://github.com/maxgerhardt/platform-nordicnrf52.git#cac6fcf943a41accd2aeb4f3659ae297a73f422e
+# note: flashed via real DFU (board manually double-tap-RST'd into bootloader first)
+# PlatformIO Core             6.1.19
+# Python                      3.14.6-final.0
+port: /dev/cu.usbmodem1101
+target xiao-nrf52840 arch arm tree 055eb70ac8a6 PROFILE all hash 37d6a1208d99182f (689 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
+target xiao-nrf52840 arch arm tree 055eb70ac8a6 PROFILE all hash 37d6a1208d99182f (689 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
+capture: OK target=xiao-nrf52840 arch=arm tree=055eb70ac8a6 profile=all hash=37d6a1208d99182f

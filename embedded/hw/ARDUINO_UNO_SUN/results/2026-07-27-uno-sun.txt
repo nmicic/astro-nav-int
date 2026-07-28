@@ -1,0 +1,10 @@
+# run 2026-07-27T15:19:39Z
+# target-folder ARDUINO_UNO_SUN env uno_sun
+# firmware sha256 5ebed0a70edb1d21731b98cb8b60a72142eb639909dad9fd802931aa79d31c52
+# platform atmelavr@5.3.0
+# PlatformIO Core             6.1.19
+# Python                      3.14.6-final.0
+port: /dev/cu.usbmodem1101
+target uno-sun arch avr8 tree 055eb70ac8a6 PROFILE sun hash f6d799f2b7e424a7 (9073 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
+capture: OK target=uno-sun arch=avr8 tree=055eb70ac8a6 profile=sun hash=f6d799f2b7e424a7

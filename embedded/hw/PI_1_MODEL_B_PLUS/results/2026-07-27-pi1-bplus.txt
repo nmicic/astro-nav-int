@@ -1,0 +1,25 @@
+# run 2026-07-27T23:46:32Z
+# target-folder PI_1_MODEL_B_PLUS tree 055eb70ac8a6
+# host reference (local): PROFILE all hash=0x37d6a1208d99182f
+# sources sha256 (local tree):
+#   acfe9de5534253e005528ad35e5dad87a2104905fdfc9e30fd4d9993a502f903  astro_nav.c
+#   9efceb8398f17e4f9d7d7087f117795fe080e09a2686c1c34c8faa4c5fb2d4a1  astro_nav.h
+#   2e6450668b714c7c2ba5f497e88c441519f71db815b22f0e17fa516b6842f7f9  fp_math.h
+#   add7aeeac0d5bc6f49d9db8b79dadf13cb7a39df5cb1eae4a740272270778c45  profile_all.c
+#   0edf4bc1763f2c83c2e9452f9e7b464c1b083e9b5f02e3efa13b9eb8d434dce5  harness.h
+#   855e44a1fe2fc675a362144b718f6c1df3946cfe77d3b8d4412b934fb84dd5d9  host_main.c
+# remote: Linux raspberrypi 6.18.34+rpt-rpi-v6 #1 Raspbian 1:6.18.34-1+rpt1 (2026-06-09) armv6l GNU/Linux
+# remote model: Raspberry Pi Model B Plus Rev 1.2
+# remote gcc: gcc (Raspbian 14.2.0-19+rpi1) 14.2.0
+# remote sha256:
+#   acfe9de5534253e005528ad35e5dad87a2104905fdfc9e30fd4d9993a502f903  astro_nav.c
+#   9efceb8398f17e4f9d7d7087f117795fe080e09a2686c1c34c8faa4c5fb2d4a1  astro_nav.h
+#   2e6450668b714c7c2ba5f497e88c441519f71db815b22f0e17fa516b6842f7f9  fp_math.h
+#   add7aeeac0d5bc6f49d9db8b79dadf13cb7a39df5cb1eae4a740272270778c45  profile_all.c
+#   0edf4bc1763f2c83c2e9452f9e7b464c1b083e9b5f02e3efa13b9eb8d434dce5  harness.h
+#   855e44a1fe2fc675a362144b718f6c1df3946cfe77d3b8d4412b934fb84dd5d9  host_main.c
+build: OK (native gcc -O2 -Wall -Wextra -Werror)
+remote: PROFILE all hash=0x37d6a1208d99182f
+remote-ms: 71
+target pi1-bplus arch armv6 tree 055eb70ac8a6 PROFILE all hash 37d6a1208d99182f (71 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
