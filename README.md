@@ -669,7 +669,7 @@ spare. The RV32I-vs-RV32IM and Armv6-M-vs-M3/M4 columns put numbers on what
 software multiply/divide costs this workload: 1.6-3.6x the instructions, depending on how
 divide-heavy the feature is.
 
-The QEMU gate has since been repeated on physical silicon: eleven
+The QEMU gate has since been repeated on physical silicon: thirteen
 operator-run PASSes across four ISA families, every board reproducing
 the host-computed profile hash bit-exactly (per-board records, harness
 configs, and raw serial transcripts in [`embedded/hw/`](embedded/hw/)).
@@ -688,6 +688,8 @@ targets except the Uno use the full `all` profile:
 | Arduino Mega 2560 | ATmega2560, 8-bit AVR @ 16 MHz | PASS, ~26.5 s |
 | Arduino Uno (R1/R2-era) | ATmega328P — `core` and `sun` slices | PASS, 2.6 s / 9.1 s |
 | Raspberry Pi 1 B+ (2014) | ARM1176, ARMv6 Linux, native distro gcc | PASS, 71 ms |
+| Freenove Control Board V5 Rev4 WiFi | Renesas RA4M1, Cortex-M4F | PASS, 968–970 ms |
+| Arduino MKR Zero | Microchip SAMD21, Cortex-M0+ | PASS, 1,576–1,580 ms |
 
 The Uno results are feature slices because the full library does not fit
 32 KB of flash (measured slice sizes in `embedded/hw/README.md`); the

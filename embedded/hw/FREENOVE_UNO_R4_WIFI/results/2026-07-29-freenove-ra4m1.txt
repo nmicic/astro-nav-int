@@ -1,0 +1,12 @@
+# run 2026-07-29T21:22:49Z
+# target-folder FREENOVE_UNO_R4_WIFI env uno_r4_wifi
+# firmware sha256 0e1b27636e63797e9feba5948f3e9b96c62cb0da334521a7e2ec84c113700113
+# platform renesas-ra @ 1.9.0
+# PlatformIO Core             6.1.19
+# Python                      3.14.6-final.0
+port: /dev/cu.usbmodemD885ACA783742
+target freenove-ra4m1 arch arm tree 9ce2ac444641 PROFILE all hash 37d6a1208d99182f (970 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
+target freenove-ra4m1 arch arm tree 9ce2ac444641 PROFILE all hash 37d6a1208d99182f (968 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
+capture: OK target=freenove-ra4m1 arch=arm tree=9ce2ac444641 profile=all hash=37d6a1208d99182f

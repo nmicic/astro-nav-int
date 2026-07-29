@@ -65,7 +65,7 @@ helper slips in.
 QEMU establishes instruction-set execution and deterministic output; it
 does not test startup behavior on silicon, peripheral integration, real
 cycles, or a hardware stack watermark. Operator-run records from
-physical boards — eleven PASSes across four ISA families (ARM, RISC-V,
+physical boards — thirteen PASSes across four ISA families (ARM, RISC-V,
 AVR8, Xtensa), each reproducing the host-computed profile hash
 bit-exactly — live in [`hw/`](hw/).
 

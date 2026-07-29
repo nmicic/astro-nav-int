@@ -31,7 +31,8 @@ Vendor IDs seen in this folder's targets:
   exact chip. A devkit with both connectors wired shows up as TWO ports for
   ONE board (`1A86` WCH / `10C4` CP210x = the USB-UART bridge side);
   `esptool chip-id` returning the same MAC on both proves it.
-- `2341` Arduino (Uno/Mega — the bridge MCU, actual target is behind it).
+- `2341` Arduino: a bridge MCU fronts classic Uno/Mega targets; newer
+  boards can expose native or debug USB (MKR Zero and Uno R4).
 - `2886` Seeed Studio (XIAO family).
 
 ## 2. PlatformIO refresher
@@ -121,6 +122,11 @@ targets except where a core needs an extra include (nRF52: TinyUSB).
 - **Classic AVR (Uno/Mega)**: avrdude over the board's bridge; opening the
   serial port DTR-resets the board — the capture just waits through the
   bootloader.
+- **SAMD21 (MKR Zero)**: the 1200-baud touch selects the SAM-BA bootloader
+  and `bossac` flashes it. Native USB briefly re-enumerates after upload;
+  the capture retries the explicit port for 20 seconds.
+- **Renesas RA (Uno R4)**: the 1200-baud touch selects the uploader and
+  PlatformIO flashes through `sam-ba`; no manual button sequence was needed.
 - **nRF52840 with Adafruit UF2/DFU bootloader**: factory firmware may
   ignore the 1200-baud touch, and adafruit-nrfutil then prints "Target is
   not in DFU mode" — **while PlatformIO still banners SUCCESS**. Never

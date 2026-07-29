@@ -27,6 +27,8 @@ the portable two-limb backend on target silicon reproduces the host's native
 | `HELTEC_WIFI_LORA_32_V3` | Heltec WiFi LoRa 32 V3 | ESP32-S3 Xtensa LX7 @ 240 MHz (4th ISA family) | PASS @ `055eb70` — same hash, 186 ms (CP2102 port: pass `/dev/cu.usbserial-*` explicitly) |
 | `MESHTASTIC_ESP32_LX6` | LILYGO T-Beam (Meshtastic node) | ESP32-D0WDQ6-V3 Xtensa LX6 @ 240 MHz | PASS @ `055eb70` — same hash, 195 ms (CH9102 port: pass `/dev/cu.usbserial-*` explicitly) |
 | `PI_1_MODEL_B_PLUS` | Raspberry Pi 1 B+ V1.2 (2014) | ARM1176JZF-S @ 700 MHz, ARMv6 Linux, NATIVE distro gcc | PASS @ `055eb70` — same hash, 71 ms (own runner: `harness/run_pi.sh`, no PlatformIO) |
+| `FREENOVE_UNO_R4_WIFI` | Freenove Control Board V5 Rev4 WiFi | Renesas RA4M1 Cortex-M4F @ 48 MHz (FPU present, unused) | PASS @ `9ce2ac4` — same hash, 968–970 ms |
+| `ARDUINO_MKR_ZERO` | Arduino MKR Zero | Microchip SAMD21 Cortex-M0+ @ 48 MHz (no FPU) | PASS @ `9ce2ac4` — same hash, 1,576–1,580 ms |
 
 The `all`-profile hash every 32-bit target reproduces is `37d6a1208d99182f`;
 the Uno rows use per-slice hashes (`core`/`sun`) because the full library

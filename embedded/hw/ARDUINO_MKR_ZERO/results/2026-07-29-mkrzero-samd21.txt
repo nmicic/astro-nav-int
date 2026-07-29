@@ -1,0 +1,12 @@
+# run 2026-07-29T21:23:13Z
+# target-folder ARDUINO_MKR_ZERO env mkrzero
+# firmware sha256 15adce7da7cb133f94a56849630251a81c3b38be206b070fa344c3e28057a8e5
+# platform atmelsam @ 8.3.0
+# PlatformIO Core             6.1.19
+# Python                      3.14.6-final.0
+port: /dev/cu.usbmodem11301
+target mkrzero-samd21 arch arm tree 9ce2ac444641 PROFILE all hash 37d6a1208d99182f (1580 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
+target mkrzero-samd21 arch arm tree 9ce2ac444641 PROFILE all hash 37d6a1208d99182f (1576 ms, informational)
+profile: PASS (target reproduces the host-computed PROFILE hash)
+capture: OK target=mkrzero-samd21 arch=arm tree=9ce2ac444641 profile=all hash=37d6a1208d99182f
